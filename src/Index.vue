@@ -14,7 +14,7 @@
   const court_empty = {id:null, name:'', time:0, timer:null, type:0, game_points:[0,0], users:[[0,0],[0,0]]};
   let court_empty_keys = Object.keys(court_empty);
   let courts = reactive([
-    {id:0, name:'場地一', time:0, timer:null, type:1, game_points:[0,0], users:[[1,2],[3,4]]},
+    {id:0, name:'場地一', time:0, timer:null, type:1, game_points:[0,0], users:[[0,2],[3,4]]},
     {id:1, name:'場地二', time:0, timer:null, type:1, game_points:[0,0], users:[[0,0],[0,0]]},
     {id:2, name:'場地三', time:0, timer:null, type:1, game_points:[0,0], users:[[0,0],[0,0]]},
     {id:3, name:'場地四', time:0, timer:null, type:1, game_points:[0,0], users:[[5,0],[7,0]]},
@@ -271,7 +271,7 @@
   }
 
   let users = reactive([
-    {id:1, name:'人員1', nick:'人1', gender:"女", level:2, phone:'', email:'', played:0, wait:2, status:1},
+    {id:1, name:'人員1', nick:'人1', gender:"女", level:2, phone:'', email:'', played:0, wait:2, status:0},
     {id:2, name:'人員2', nick:'', gender:"男", level:5, phone:'', email:'', played:0, wait:0, status:1},
     {id:3, name:'人員3', nick:'人3', gender:"男", level:3, phone:'', email:'', played:0, wait:0, status:1},
     {id:4, name:'人員4', nick:'人4', gender:"女", level:1, phone:'', email:'', played:0, wait:0, status:1},
@@ -299,7 +299,7 @@
   }
   provide('court_delete_user', court_delete_user);
   const user_set_status = (key=-1, status, search_type='user_id') => {
-    if(key < 0 || key==''){ return; }
+    if(key < 0 || key===''){ return; }
 
     let user_id = "";
     let user_index = "";
@@ -316,7 +316,6 @@
       user_id = users[key].id;
       user_index = key;
     }
-
     if(user_index===""){ return; }
     if(status==1){
       if(check_on_court(user_id)){
