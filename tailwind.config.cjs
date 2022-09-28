@@ -22,8 +22,8 @@ module.exports = {
   },
   plugins: [
     // require('@tailwindcss/typography'),
-    require('@tailwindcss/forms')  /* <input type="email" class="form-input px-1 py-1 rounded" /> */
-    // require('@tailwindcss/line-clamp'),  /* <p class="line-clamp-3 md:line-clamp-none"></p> */
+    require('@tailwindcss/forms'),  /* <input type="email" class="form-input px-1 py-1 rounded" /> */
+    require('@tailwindcss/line-clamp')  /* <p class="line-clamp-3 md:line-clamp-none"></p> */
     // require('@tailwindcss/aspect-ratio')
   ],
 }

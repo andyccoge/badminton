@@ -10,8 +10,9 @@
   const toast = useToast();
 
   // 主頁場地-------------------------------------------------------------------------
+  let court_empty_user = () => { return [[0,0],[0,0]]; }
   /* time:比賽時間秒數、timer：計時函數回傳值、type：1.比賽,0.預備 */
-  const court_empty = {id:null, name:'', time:0, timer:null, type:0, game_points:[0,0], users:[[0,0],[0,0]]};
+  const court_empty = {id:null, name:'', time:0, timer:null, type:0, game_points:[0,0], users:court_empty_user()};
   let court_empty_keys = Object.keys(court_empty);
   let courts = reactive([
     {id:0, name:'場地一', time:0, timer:null, type:1, game_points:[0,0], users:[[0,2],[3,4]]},
@@ -80,6 +81,10 @@
     });
   }
   const court_start = (court_index) => {
+    if(check_court_empty(court_index)){
+      toast.warning("此場地尚未安排人員");
+      return;
+    }
     if(courts[court_index].timer){
       toast.warning("此場地已開始比賽");
     }else{
@@ -88,67 +93,142 @@
       }, 1000);
     }
   }
-  const court_stop = (court_index) => {
-    if(!courts[court_index].timer){
-      toast.warning("此場地尚未開始比賽");
+  const court_stop = (court_index, need_notify=true) => {
+    if(courts[court_index].time<=0){
+      if(need_notify){
+        toast.warning("此場地尚未開始比賽");
+      }
       return false;
     }else{
-      clearInterval(courts[court_index].timer);
-      courts[court_index].timer = null;
+      if(courts[court_index].timer){
+        clearInterval(courts[court_index].timer);
+        courts[court_index].timer = null;
+      }
       return true;
     }
   }
   const model_point_input = ref(null);
   const court_repeat = (court_index) => {
-    if(check_court_empty(court_index)){
-      toast.warning("無比賽人員，無法再來一場");return;
-    }
-
     let result = court_stop(court_index);
     if(!result){ return; }
-    pointModal.show = true;
+
+    if(check_court_empty(court_index)){
+      toast.warning("無比賽人員，無法再來一場");return;
+    }      
     pointModal.repeat_index = court_index;
     pointModal.finish_index = court_index;
+    pointModal.show = true;
     setTimeout(()=>{ model_point_input.value.focus() }, 100);
   }
   const court_next = (court_index) => {
+    let result = court_stop(court_index);
+    if(!result){ return; }
+
+    pointModal.repeat_index = -1;
+    pointModal.finish_index = court_index;
     if(check_court_empty(court_index)){
-      court_change(court_index);
+      court_complete();
     }else{
-      let result = court_stop(court_index);
-      if(!result){ return; }
       pointModal.show = true;
-      pointModal.repeat_index = -1;
-      pointModal.finish_index = court_index;
       setTimeout(()=>{ model_point_input.value.focus() }, 100);
     }
   }
-  const court_complete = () =>{
-    /* 場上人員完賽+1、等待歸零 */
-    courts[pointModal.finish_index].users.forEach((group, group_index) => {
-      group.forEach((uesr_id, uesr_index) => {
-        for (let x = 0; x < users.length; x++) {
-          if(users[x].id == uesr_id){
-            users[x].wait = 0;
-            users[x].played += 1;
-          }
-        }
-      });
-    });
-    if(pointModal.repeat_index!=-1){ /* 再一場 */
-      if(check_court_empty(pointModal.finish_index)){
-        toast.warning("無比賽人員，無法再來一場");return;
-      }
-      game_start(pointModal.finish_index);
-    }
-    else{ /* 換下一場 */
-      /* 換人員 */
-      court_change(pointModal.finish_index);
-    }
+  const court_complete = () =>{    
     /* TODO：儲存比賽紀錄 */
 
+    /* 設定剛比完賽的人員 */
+    played_user_ids.value = [];
+    courts[pointModal.finish_index].users.forEach((group)=>{
+      group.forEach((user_id) => { played_user_ids.value.push(user_id); });
+    });
+    
+    let has_next_game = null;
+    if(pointModal.repeat_index!=-1){ /* 再一場 */
+      has_next_game = true;
+    }
+    else{ /* 換下一場 */
+      has_next_game = court_change(pointModal.finish_index); /* 檢查是否有下一場比賽 */
+    }
+      
+    change_user_calculate(pointModal.finish_index); /* 更新人員比賽統計 */
+    if(has_next_game){
+      start_new_game(pointModal.finish_index);
+    }else{
+      court_reset(pointModal.finish_index, true);
+    }
+    if(check_court_empty(pointModal.finish_index)){     
+        toast.warning("目前已無預備人員，或預備人員正在場上");
+    }
     pointModal.show = false;
   }
+  const court_change = (court_index) => {  
+    /* 設定場上人員下場 */
+    let ori = copy_court(courts[court_index]);
+    courts[court_index].users = court_empty_user();
+    ori.users.forEach((group, group_index)=>{
+      group.forEach((user_id,user_index) => {
+        user_set_status(user_id, 0, 'user_id');
+      });
+    });
+
+    let has_next_game = false;
+    for (let x = 0; x < courts.length; x++) {
+      if(courts[x].type==0){
+        if(check_court_empty(x)){ continue; }
+        let has_uer_on_court = false;
+        for (let y = 0; y < courts[x].users.length; y++) {
+          for (let z = 0; z < courts[x].users.length; z++) {
+            let check_user_id = courts[x].users[y][z];
+            if(check_on_court(check_user_id) && check_user_id!='0'){
+              has_uer_on_court = true;
+              break;
+            }
+          }
+        }
+        if(has_uer_on_court){ continue; }
+        has_next_game = true;
+
+        /* 設定下組員上場 */
+        let next = copy_court(courts[x]);
+        next.users.forEach((group, group_index)=>{
+          group.forEach((user_id, user_index) => {
+            courts[court_index].users[group_index][user_index] = user_id;
+            user_set_status(user_id, 1, 'user_id');
+          });
+        });
+        next.users = court_empty_user();
+
+        courts.splice(x, 1);
+        courts.push(next);
+        break;
+      }
+    }
+
+    return has_next_game;
+  }
+  /* 只在人員更新後才使用 */
+  const change_user_calculate = (court_index) => {
+    /* 調整人員比賽統計 */
+    users.forEach((user, user_index) => {
+      if(played_user_ids.value.indexOf(user.id)!=-1){ /* 如果是剛比完賽的人 */
+        users[user_index].wait = 0;   /* 等待歸零 */
+        users[user_index].played += 1;/* 完賽+1 */
+      }
+      else if(!check_on_court(user.id) && played_user_ids.value.indexOf(user.id)==-1){ /* 不在場上 且 不是剛比完賽的人 */
+        users[user_index].wait += 1; /* 等待+1 */
+      }
+    });
+
+    played_user_ids.value = []; /* 清除剛比完賽的人員 */
+  }
+  const start_new_game = (court_index) => {
+    if(check_court_empty(court_index)){
+      toast.warning("無比賽人員，無法開始");return;
+    }
+    court_reset(court_index, false);                /* 重置場地(不重置人員) */
+    court_start(court_index);                       /* 開始計時 */
+  }
+
   const check_court_empty = (court_index) => {
     let court_is_empty = true;
     for (let i = 0; i < courts[court_index].users.length; i++) {
@@ -160,59 +240,11 @@
     }
     return court_is_empty;
   }
-  const court_change = (court_index) =>{
-    let changed = false;
-    for (let x = 0; x < courts.length; x++) {
-      if(courts[x].type==0){
-        if(check_court_empty(x)){ continue; }
-        let has_uer_on_court = false;
-        for (let y = 0; y < courts[x].users.length; y++) {
-          for (let z = 0; z < courts[x].users.length; z++) {
-            let check_user_id = courts[x].users[y][z];
-            if(check_on_court(check_user_id) && check_user_id!='0'){
-              has_uer_on_court = true; break;
-            }
-          }
-        }
-        if(has_uer_on_court){ continue; }
-        changed = true;
-
-        let next = {};
-        court_empty_keys.forEach(key => { next[key] = court_empty[key] });
-        courts[x].users.forEach((group, group_index)=>{ next.users[group_index] = [...group] });
-
-        next.users.forEach((group, group_index)=>{
-          group.forEach((user_id,user_index) => {
-            let ori_user = courts[court_index].users[group_index][user_index];
-            courts[court_index].users[group_index][user_index] = user_id;
-            user_set_status(user_id, 1, 'user_id');
-            user_set_status(ori_user, 0, 'user_id');
-          });
-        });
-        next.users = [[0,0],[0,0]];
-
-        courts.splice(x, 1);
-        courts.push(next);
-        break;
-      }
-    }
-    if(changed){
-      game_start(court_index);
-    }else{
-      court_reset(court_index, true);
-    }
-    if(check_court_empty(court_index)){ 
-      toast.warning("目前已無預備人員，或預備人員正在場上");return;
-    }
-  }
-  const game_start = (court_index) => {
-    if(check_court_empty(court_index)){
-      toast.warning("無比賽人員，無法開始");return;
-    }
-    court_reset(court_index);
-    if(!check_court_empty(court_index)){
-      court_start(court_index);                     /* 開始計時 */
-    }
+  const copy_court = (target_court) => {
+    let copy = {};
+    court_empty_keys.forEach(key => { copy[key] = target_court[key] });
+    target_court.users.forEach((group, group_index)=>{ copy.users[group_index] = [...group] });
+    return copy;
   }
   const court_reset = (court_index, reset_user=false) => {
     courts[court_index].time = court_empty.time;    /* 重置時間 */
@@ -220,7 +252,7 @@
     clearInterval(courts[court_index].timer);       /* 清除計時 */
     courts[court_index].timer = court_empty.timer;  /* 重置計時器 */
     if(reset_user){
-      courts[court_index].users = [[0,0],[0,0]]     /* 重設人員 */
+      courts[court_index].users = court_empty_user()/* 重設人員 */
     }
   }
   provide('courts', readonly(courts));
@@ -246,7 +278,7 @@
   const userModal_user_name = ref(null);
   const userModal_user_level = ref(null);
   const userModal_open = (user_index=-1) => {
-    menu_open_bottom.value = true;
+    // menu_open_bottom.value = true;
     userModal.show = true;
     userModal.index = user_index;
     setTimeout(()=>{ userModal_user_name.value.focus() }, 100);
@@ -256,7 +288,17 @@
       userModal_keys.forEach(key => { userModal.user[key] = users[user_index][key] });
     }
   }
+  const userModal_open_id = (user_id=-1) => {
+    for (let index = 0; index < users.length; index++) {
+      if(users[index].id==user_id){
+        userModal_open(index);
+        break;
+      }
+    }
+  }
   provide('userModal_open', userModal_open);
+  provide('userModal_open_id', userModal_open_id);
+  
   const user_save = () => {
     if(!userModal.user.name){ toast.warning("請輸入姓名");return; }
     if(userModal.index==-1){
@@ -268,20 +310,29 @@
     else{
       userModal_keys.forEach(key => { users[userModal.index][key] = userModal.user[key] });
     }
+
+    /* TODO：新增/編輯人員資料 */
+    let new_user_id = users.length>=2 ? users[users.length-2].id + 1 : 0;
+    if(userModal.index==-1){
+      users[users.length-1].id = new_user_id;
+    }
+
+    toast.success("資料已儲存");
   }
 
   let users = reactive([
-    {id:1, name:'人員1', nick:'人1', gender:"女", level:2, phone:'', email:'', played:0, wait:2, status:0},
+    {id:1, name:'人員1', nick:'人1', gender:"女", level:2, phone:'', email:'', played:0, wait:0, status:0},
     {id:2, name:'人員2', nick:'', gender:"男", level:5, phone:'', email:'', played:0, wait:0, status:1},
     {id:3, name:'人員3', nick:'人3', gender:"男", level:3, phone:'', email:'', played:0, wait:0, status:1},
     {id:4, name:'人員4', nick:'人4', gender:"女", level:1, phone:'', email:'', played:0, wait:0, status:1},
     {id:5, name:'人員5', nick:'人5', gender:"女", level:2, phone:'', email:'', played:0, wait:0, status:1},
-    {id:6, name:'人員6', nick:'人6', gender:"男", level:2, phone:'', email:'', played:0, wait:5, status:0},
+    {id:6, name:'人員6', nick:'人6', gender:"男", level:2, phone:'', email:'', played:0, wait:0, status:0},
     {id:7, name:'人員7', nick:'人7', gender:"男", level:2, phone:'', email:'', played:0, wait:0, status:1},
-    {id:8, name:'人員8', nick:'人8', gender:"女", level:3, phone:'', email:'', played:0, wait:4, status:0},
-    {id:9, name:'人員9', nick:'人9', gender:"女", level:3, phone:'', email:'', played:0, wait:4, status:0},
-    {id:10, name:'人員10', nick:'人10', gender:"女", level:3, phone:'', email:'', played:0, wait:4, status:0},
+    {id:8, name:'人員8', nick:'人8', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
+    {id:9, name:'人員9', nick:'人9', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
+    {id:10, name:'人員10', nick:'人10', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
   ]);
+  let played_user_ids = ref([]);
   const users_rest = computed(()=> { return users.filter(user => user.status==0)});
   provide('users', readonly(users));
   provide('users_rest', readonly(users_rest));
@@ -391,8 +442,18 @@
       set_user_view(user_index);
     }
   }
+  const toggle_menu_open_left_id = (user_id=-1) => {
+    for (let index = 0; index < users.length; index++) {
+      if(users[index].id==user_id){
+        toggle_menu_open_left(index);
+        break;
+      }
+    }
+  }
   provide('menu_open_left', readonly(menu_open_left));
   provide('toggle_menu_open_left', toggle_menu_open_left);
+  provide('toggle_menu_open_left_id', toggle_menu_open_left_id);
+  
   let user_view_index = ref(-1);
   provide('user_view_index', user_view_index);
   const user_delete = (user_index) => {
@@ -531,7 +592,7 @@
 
   <main>
     <div class="bg-green-200 pb-6">
-      <div class="px-4 grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1">
+      <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==1"
                 :court="court"
@@ -553,7 +614,7 @@
       <span class="absolute pl-8 pt-3 animate-bounce">
         <svg class="h-8 w-8 text-yellow-400"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  <line x1="12" y1="5" x2="12" y2="19" />  <polyline points="19 12 12 19 5 12" /></svg>
       </span>
-      <div class="px-8 grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1">
+      <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==0"
               :court="court"

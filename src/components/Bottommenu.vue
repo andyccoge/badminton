@@ -25,6 +25,7 @@
 </script>
 
 <template>
+    <div class="bottom_nav_leave_blank pt-12"></div>
     <nav>
         <div class="btn absolute w-full">
             <div class="container mx-auto">
@@ -63,6 +64,7 @@
             </div>
         </Transition>
     </nav>
+    <div v-if="menu_open" class="bottom_nav_open_leave_blank"></div>
 </template>
 
 <style scoped>
@@ -76,17 +78,19 @@
         top: -44px;
     }
 
+    .bottom_nav_open_leave_blank,
     .nav_content{
         overflow-y: scroll;
-        height: 80vh;
+        height: 60vh;
     }
     .v-enter-active,
     .v-leave-active{
         transition-duration: 0.5s;
-        height: 80vh;
+        height: 60vh;
     }
 
     @media only screen and (min-width: 976px){
+        .bottom_nav_open_leave_blank,
         .nav_content{
             height: 30vh;
         }
