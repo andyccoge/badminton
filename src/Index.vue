@@ -273,14 +273,18 @@
   let grouping_users_mode = ref(false) 
   const grouping_users_toggle = (status=0) => {
     if(grouping_users_mode.value || status==-1){
+      if(grouping_users_mode.value){
+        toast.info("群組人員模式已關閉");
+      }
       grouping_users_mode.value = false;
-      toast.info("群組人員模式已關閉");
       return;
     }
     if(!grouping_users_mode.value){
       grouping_users_mode.value = true;
+      if(!grouping_users_mode.value){
+        toast.info("開啟群組人員模式");
+      }
       menu_open_bottom.value = true;
-      toast.info("開啟群組人員模式");
     }
   }
   provide('grouping_users_mode', grouping_users_mode);
