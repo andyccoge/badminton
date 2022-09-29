@@ -280,10 +280,10 @@
       return;
     }
     if(!grouping_users_mode.value){
-      grouping_users_mode.value = true;
       if(!grouping_users_mode.value){
         toast.info("開啟群組人員模式");
       }
+      grouping_users_mode.value = true;
       menu_open_bottom.value = true;
     }
   }
