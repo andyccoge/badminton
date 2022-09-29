@@ -268,6 +268,22 @@
   let menu_open_bottom = ref(false);
   provide('menu_open_bottom', menu_open_bottom);
   
+  let grouping_users_mode = ref(false) 
+  const grouping_users_toggle = (status=0) => {
+    if(grouping_users_mode.value || status==-1){
+      grouping_users_mode.value = false;
+      toast.info("群組人員模式已關閉");
+      return;
+    }
+    if(!grouping_users_mode.value){
+      grouping_users_mode.value = true;
+      menu_open_bottom.value = true;
+      toast.info("開啟群組人員模式");
+    }
+  }
+  provide('grouping_users_mode', grouping_users_mode);
+  provide('grouping_users_toggle', grouping_users_toggle);
+
   /* level：等級、played：已比場數、wait：等候場數、status:狀態0.閒置 1.場上 */
   const user_empty = {id:null, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0};
   let userModal_keys = Object.keys(user_empty);
@@ -332,9 +348,13 @@
     {id:9, name:'人員9', nick:'人9', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
     {id:10, name:'人員10', nick:'人10', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
   ]);
+  let users_by_teams = reactive([[...users.map((user=>{return user.id}))]]);
+  let team_select_uesr_ids = ref([]);
   let played_user_ids = ref([]);
   const users_rest = computed(()=> { return users.filter(user => user.status==0)});
   provide('users', readonly(users));
+  provide('users_by_teams', readonly(users_by_teams));
+  provide('team_select_uesr_ids', readonly(team_select_uesr_ids));
   provide('users_rest', readonly(users_rest));
   const get_user_name = (user_id) => {
     for (let index = 0; index < users.length; index++) {
@@ -393,17 +413,60 @@
     chage_user.user_index = 0;
   }
   const select_user = (user_index) => {
-    if(chage_user.court_index==-1){ 
-      toggle_menu_open_left(user_index);
-      set_user_view(user_index);
+    if(grouping_users_mode.value){ /* 啟用群組模式下 */
+      let select_user_index = team_select_uesr_ids.value.indexOf(users[user_index].id);
+      if(select_user_index==-1){
+        team_select_uesr_ids.value.push(users[user_index].id);
+      }else{
+        team_select_uesr_ids.value.splice(select_user_index, 1);
+      }
+    }else{
+      if(chage_user.court_index==-1){ 
+        toggle_menu_open_left(user_index);
+        set_user_view(user_index);
+      }
+      else{
+        let ori_user = courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index];
+        courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index] = users[user_index].id;
+        user_set_status(ori_user, 0, 'user_id');
+        user_set_status(user_index, 1, 'user_index');
+        menu_open_bottom.value = false;
+      }
     }
-    else{
-      let ori_user = courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index];
-      courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index] = users[user_index].id;
-      user_set_status(ori_user, 0, 'user_id');
-      user_set_status(user_index, 1, 'user_index');
-      menu_open_bottom.value = false;
+  }
+  const grouping_users = () => {
+    console.log(users_by_teams);
+    let group = [...team_select_uesr_ids.value];
+    if(group.length==0){ toast.warning('尚未選擇群組人員');return; }
+
+    let copy = [];
+    for (let x = 0; x < users_by_teams.length; x++) {
+      copy.push([...users_by_teams[x]]);
     }
+    for (let x = 0; x < copy.length; x++) {
+      for (let y = 0; y < copy[x].length; y++) {
+        if(group.indexOf(copy[x][y])!=-1){
+          let index = users_by_teams[x].indexOf(copy[x][y]);
+          users_by_teams[x].splice(index, 1);
+        }
+      }
+    }
+    users_by_teams.push(group);
+    
+    copy = [...users_by_teams];
+    for (let x = 0; x < copy.length; x++) {
+      if(x!=0){
+        if(copy[x].length==1){
+          users_by_teams[0].push(copy[x][0]);
+        }
+        if(copy[x].length<=1){  
+          let index = users_by_teams.indexOf(copy[x]);
+          users_by_teams.splice(index, 1);
+        }
+      }
+    }
+
+    team_select_uesr_ids.value = [];
   }
   const set_user_view  = (user_index) => {
     user_view_index.value = user_index;
@@ -426,6 +489,7 @@
   provide('court_chage_user', court_chage_user);
   provide('court_chage_user_reset', court_chage_user_reset);
   provide('select_user', select_user);
+  provide('grouping_users', grouping_users);
   provide('check_on_court', check_on_court);
 
   // 左側人員詳細料面板-------------------------------------------------------------------------

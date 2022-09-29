@@ -63,7 +63,7 @@
 <style scoped>
     nav{
         position: fixed;
-        width: 50%;
+        width: 60%;
         height: 100%;
         max-width: 400px;
         z-index: 15;
