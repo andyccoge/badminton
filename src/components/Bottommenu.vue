@@ -19,6 +19,11 @@
         }
     }
 
+    let bottom_nav_more = inject('bottom_nav_more') ? inject('bottom_nav_more') : ref(true);
+    const toggle_bottom_nav_more =()=>{
+        bottom_nav_more.value = bottom_nav_more.value ? false : true;
+    }
+
     const init_alert_wait = courts.filter(court => court.type==1).length;
     let alert_wait = ref(init_alert_wait);
     provide('alert_wait', readonly(alert_wait));
@@ -40,6 +45,14 @@
                         @click.self="toggle_menu_open">
                     人員面板
                     <span v-if="grouping_users_mode">(群組模式)</span>
+                    <span class="absolute left-2" v-if="!grouping_users_mode">
+                        <button class="" v-if="!bottom_nav_more" @click="toggle_bottom_nav_more">
+                            <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <circle cx="9" cy="5" r="1" />  <circle cx="9" cy="12" r="1" />  <circle cx="9" cy="19" r="1" />  <circle cx="15" cy="5" r="1" />  <circle cx="15" cy="12" r="1" />  <circle cx="15" cy="19" r="1" /></svg>
+                        </button>
+                        <button class="" v-if="bottom_nav_more" @click="toggle_bottom_nav_more">
+                            <svg class="h-5 w-5 text-white"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  <circle cx="12" cy="12" r="1" />  <circle cx="12" cy="5" r="1" />  <circle cx="12" cy="19" r="1" /></svg>    
+                        </button>
+                    </span>
                     <span class="absolute right-2">
                         <button class="mx-2" @click="grouping_users_toggle">
                             <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,15 +64,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                             </svg>
                         </button>
-                    </span>
+                    </span>                    
                 </button>
             </div>
         </div>
         <Transition>
-            <div class="border-4 border-b-0 rounded-t-lg px-3 pt-2 bg-white" v-if="menu_open"
+            <div class="border-4 border-b-0 rounded-t-lg px-3 py-2 bg-white" v-if="menu_open"
                  :class="[grouping_users_mode ? 'border-black' : 'border-red-700']">
                  <div class="nav_content">
-                    <div v-for="(team, team_index) in users_by_teams">
+                    <div v-for="(team, team_index) in users_by_teams" class="inline-block pt-1 pr-0.5">
                         <div :class="[team_index!=0 ? 'inline-block border-2 border-black rounded' : '' ]">
                             <template v-for="user_id in team">
                                 <template v-for="(user, user_index) in users">
@@ -71,15 +84,15 @@
                             </template>
                         </div>
                     </div>
-                    <div class="grid lg:grid-cols-2 md:grid-cols-1 py-2 px-2" v-if="!grouping_users_mode">
-                        <div>
-                            ※透明表示目前正在場上，但仍可安排上場<br>
-                            ※黃框表示有排上預備場<br>
-                            ※點擊場地人員區塊即可開始指派人員
-                        </div>
-                        <div class="flex items-end justify-end">
-                            等候場數提示：<input type="number" class="form-input px-1 py-1 rounded" min="0" v-model="alert_wait"/>
-                        </div>
+                </div>
+                <div class="grid lg:grid-cols-2 md:grid-cols-1" v-if="!grouping_users_mode && bottom_nav_more">
+                    <div>
+                        ※透明表示目前正在場上，但仍可安排上場<br>
+                        ※黃框表示有排上預備場<br>
+                        ※點擊場地人員區塊即可開始指派人員
+                    </div>
+                    <div class="flex items-end justify-end">
+                        等候場數提示：<input type="number" class="form-input px-1 py-1 rounded" min="0" v-model="alert_wait"/>
                     </div>
                 </div>
                 <button class="my-2 w-full font-bold py-2 px-4 rounded-md text-white bg-black" v-if="grouping_users_mode"
@@ -106,12 +119,12 @@
     .bottom_nav_open_leave_blank,
     .nav_content{
         overflow-y: scroll;
-        height: 60vh;
+        height: 50vh;
     }
     .v-enter-active,
     .v-leave-active{
         transition-duration: 0.5s;
-        height: 60vh;
+        height: 50vh;
     }
 
     @media only screen and (min-width: 976px){

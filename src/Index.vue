@@ -267,6 +267,8 @@
   // 下方人員面板-------------------------------------------------------------------------
   let menu_open_bottom = ref(false);
   provide('menu_open_bottom', menu_open_bottom);
+  let bottom_nav_more = ref(true);
+  provide('bottom_nav_more', bottom_nav_more);
   
   let grouping_users_mode = ref(false) 
   const grouping_users_toggle = (status=0) => {

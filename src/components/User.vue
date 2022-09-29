@@ -15,10 +15,12 @@
     const check_on_court = inject('check_on_court');
     const grouping_users_mode = inject('grouping_users_mode');
     const team_select_uesr_ids = inject('team_select_uesr_ids');
+    
+    const bottom_nav_more = inject('bottom_nav_more');
 </script>
 
 <template>
-    <div class="py-2 px-2 m-1 inline-block rounded-md relative cursor-pointer"
+    <div class="py-2 px-2 m-0.5 inline-block rounded-md relative cursor-pointer"
          :class="[ 
             user.status==1 && !grouping_users_mode ?'opacity-30' : '',
             props.user.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400',
@@ -31,10 +33,12 @@
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-700 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
         </span>
-        <div class="flex" :class="[!grouping_users_mode ? 'flex-col' : '']" @click.self="select_user(user_index)">
+        <div class="flex" :class="[!grouping_users_mode && bottom_nav_more ? 'flex-col' : '']" @click.self="select_user(user_index)">
             <span class="pr-2" v-text="show_name" @click="select_user(user_index)"></span>
             <div class="flex align-center justify-between min-w-min">
-                <span class="" @click="select_user(user_index)" v-if="!grouping_users_mode">等待：<span v-text="user.wait"></span></span>
+                <span class="" @click="select_user(user_index)" v-if="!grouping_users_mode && bottom_nav_more">
+                    等待：<span v-text="user.wait"></span>
+                </span>
                 <button class="ml-2" @click="toggle_menu_open_left(user_index)">
                     <svg class="h-5 w-5 text-black"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
