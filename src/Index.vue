@@ -326,7 +326,7 @@
     if(userModal.index==-1){
       let new_user = {};
       userModal_keys.forEach(key => { new_user[key] = userModal.user[key] });
-      users.push(new_user)
+      users.push(new_user);
       userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
     }
     else{
@@ -337,6 +337,7 @@
     let new_user_id = users.length>=2 ? users[users.length-2].id + 1 : 0;
     if(userModal.index==-1){
       users[users.length-1].id = new_user_id;
+      users_by_teams[0].push(new_user_id);
     }
 
     toast.success("資料已儲存");
