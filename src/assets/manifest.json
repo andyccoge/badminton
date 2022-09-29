@@ -1,0 +1,43 @@
+{
+    "name": "羽球排場系統",
+    "short_name": "羽球排場",
+    "description": "羽球排場系統，用手機就能管理場地人員調度，",
+    "theme_color": "#ffba00",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "orientation": "portrait",
+    "scope": "/",
+    "start_url": "index.html",
+    "icons": [
+        {
+          "src": "/src/assets/manifest/favicon.ico.png",
+          "type": "image/png",
+          "sizes": "37x37",
+          "purpose": "any"
+        },
+        {
+          "src": "/src/assets/manifest/favicon.ico-192.png",
+          "type": "image/png",
+          "sizes": "192x192",
+          "purpose": "any"
+        },
+        {
+          "src": "/src/assets/manifest/favicon.ico-192.png",
+          "type": "image/png",
+          "sizes": "192x192",
+          "purpose": "maskable"
+        },
+        {
+          "src": "/src/assets/manifest/favicon.ico-384.png",
+          "type": "image/png",
+          "sizes": "384x384",
+          "purpose": "maskable"
+        },
+        {
+          "src": "/src/assets/manifest/favicon.ico-512.png",
+          "type": "image/png",
+          "sizes": "512x512",
+          "purpose": "maskable"
+        }
+    ]
+  }

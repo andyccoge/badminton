@@ -472,6 +472,34 @@
     users.splice(user_index, 1); 
   }
   provide('user_delete', user_delete);
+
+
+  /*-- PWA功能 --*/
+    /*加入主畫面-------------------------------*/
+    const modal_open_add_home = ref(null);
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later.
+        // Update UI to notify the user they can add to home screen
+        modal_open_add_home.value = e;
+      });
+    }
+    const do_add_home = () => {
+      if(!modal_open_add_home.value){ return; }
+      // Show the prompt
+      modal_open_add_home.value.prompt();
+      // Wait for the user to respond to the prompt
+      modal_open_add_home.value.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        modal_open_add_home.value = null;
+      });
+    }
 </script>
 <script>
   let check_renew = true;
@@ -583,6 +611,22 @@
               :class="'bg-red-500 hover:bg-red-400 text-white border-red-700 hover:border-red-500'"
               @click="user_save">
         確認儲存
+      </button>
+    </template>
+  </modal>
+  <!-- 加入主頁面 -->
+  <modal :show="modal_open_add_home!=null" :click_bg_close="true" @close="modal_open_add_home=null;">
+    <template #header>
+      <h3 class="font-bold text-xl">加入主畫面</h3>
+    </template>
+    <template #body>
+      <p>在手機主畫面建立捷徑，讓管理羽球場地更加輕鬆容易~</p>
+    </template>
+    <template #footer>
+      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
+              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
+              @click="do_add_home">
+        建立
       </button>
     </template>
   </modal>
