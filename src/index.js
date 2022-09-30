@@ -5,11 +5,15 @@ import "vue-toastification/dist/index.css";
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
+const app = createApp(Index);
+
 const options = {
     timeout: 3000,
     // maxToasts: 5,
 };
-createApp(Index).use(Toast, options).use(VueSweetalert2).mount('#app');
+app.use(Toast, options);
+app.use(VueSweetalert2);
+app.mount('#app');
 
 /*-- PWA功能 --*/
     /*初始化PWA*/

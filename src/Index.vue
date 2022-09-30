@@ -4,6 +4,9 @@
   const toast = useToast();
   const swal = inject('$swal');
   
+  import { db, get_db_data } from '../db.js';
+  console.log(get_db_data(db, 'users'))
+
   import Nav from './components/Nav.vue';
   import Leftmenu from './components/Leftmenu.vue';
   import Bottommenu from './components/Bottommenu.vue';

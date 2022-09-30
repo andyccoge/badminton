@@ -16,6 +16,7 @@
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@tailwindcss/typography": "^0.5.7",
+    "firebase": "^9.10.0",
     "headlessui": "^0.0.0",
     "stylus": "^0.59.0",
     "stylus-loader": "^3.0.2",
