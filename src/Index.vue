@@ -1,11 +1,27 @@
 <script setup>
-  import { ref, reactive, provide, readonly, computed, inject } from 'vue';
+  import { ref, reactive, provide, readonly, computed, inject, onMounted } from 'vue';
   import { useToast } from "vue-toastification";
   const toast = useToast();
   const swal = inject('$swal');
-  
-  import { db, get_db_data } from '../db.js';
-  console.log(get_db_data(db, 'users'))
+
+  // 資料庫初始化
+  import { db, db_auth, db_sign_in, get_db_data } from '../db.js';
+  const db_login_modal = reactive({
+    show: true, email: '', password:'',
+  })
+  const input_email = ref(null);
+  const sign_in = () => {
+    db_sign_in(db_auth, db_login_modal.email, db_login_modal.password).then(() => {
+      db_login_modal.show = false;
+      console.log(get_db_data(db, 'users'))
+    })
+    .catch((error) => {
+      console.log(error.message);
+      alert('登入失敗');
+      // location.href = '/404.html';
+    });
+  }
+  setTimeout(()=>{ input_email.value.focus(); alert('請先登入系統'); }, 100);
 
   import Nav from './components/Nav.vue';
   import Leftmenu from './components/Leftmenu.vue';
@@ -611,6 +627,23 @@
 </script>
 
 <template>
+  <!-- 登入授權資料庫 -->
+  <modal :show="db_login_modal.show" :click_bg_close="true" @close="db_login_modal.show = false;">
+    <template #header>
+      <h3 class="font-bold text-xl">登入授權資料庫</h3>
+    </template>
+    <template #body>
+      信箱：<input type="email" class="form-input px-1 py-1 rounded w-full" ref="input_email" v-model="db_login_modal.email"/>
+      密碼：<input type="password" class="form-input px-1 py-1 rounded w-full" v-model="db_login_modal.password"/>
+    </template>
+    <template #footer>
+      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
+              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
+              @click="sign_in">
+        登入
+      </button>
+    </template>
+  </modal>
   <!-- 新增/編輯場地 -->
   <modal :show="courtModal.show" :click_bg_close="true" 
          @close="courtModal.show = false">
@@ -625,7 +658,7 @@
     </template>
     <template #footer>
       <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="[courtModal.type==1 ? 'bg-green-500 hover:bg-green-400 text-white border-green-700 hover:border-green-500' :
+              :class="[courtModal.type==1 ? 'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500' :
                                             'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'
                       ]"
               @click="add_court">
@@ -662,7 +695,7 @@
     </template>
     <template #footer>
       <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="'bg-green-500 hover:bg-green-400 text-white border-green-700 hover:border-green-500'"
+              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
               @click="court_complete">
         完成比賽
       </button>
@@ -734,7 +767,7 @@
   <Leftmenu></Leftmenu>
 
   <main>
-    <div class="bg-green-200 pb-6">
+    <div class="bg-yellow-200 pb-6">
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==1"
@@ -746,7 +779,7 @@
       <div class="container mx-auto mt-4">
         <button id="show-modal" @click="courtModal_add(1)"
                 class="w-full font-bold py-2 px-4 border-b-4 rounded
-                    bg-green-500 hover:bg-green-400 text-white border-green-700 hover:border-green-500">
+                    bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500">
           新增比賽場地
         </button>
       </div>

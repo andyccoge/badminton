@@ -13,6 +13,9 @@ const firebaseConfig = {
 const firebase = initializeApp(firebaseConfig);
 
 export const db = getFirestore(firebase);
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+export const db_sign_in = signInWithEmailAndPassword;
+export const db_auth = getAuth();
 
 export async function get_db_data(db, table, cond=[]) {
     const citiesCol = collection(db, table);
