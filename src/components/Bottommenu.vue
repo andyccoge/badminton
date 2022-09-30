@@ -116,9 +116,11 @@
         top: -42px
     }
 
-    .bottom_nav_open_leave_blank,
     .nav_content{
         overflow-y: scroll;
+    }
+    .bottom_nav_open_leave_blank,
+    .nav_content{
         height: 50vh;
     }
     .v-enter-active,

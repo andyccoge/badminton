@@ -1,13 +1,14 @@
 <script setup>
-  import { ref, reactive, provide, readonly, computed } from 'vue';
+  import { ref, reactive, provide, readonly, computed, inject } from 'vue';
   import { useToast } from "vue-toastification";
+  const toast = useToast();
+  const swal = inject('$swal');
+  
   import Nav from './components/Nav.vue';
   import Leftmenu from './components/Leftmenu.vue';
   import Bottommenu from './components/Bottommenu.vue';
   import Modal from './components/Modal.vue';
   import Court from './components/Court.vue';
-
-  const toast = useToast();
 
   // 主頁場地-------------------------------------------------------------------------
   let court_empty_user = () => { return [[0,0],[0,0]]; }
@@ -71,13 +72,25 @@
   }
   const court_delete = (court_index) => {
     if (court_index < 0 && court_index > courts.length) { return; }
-    if(!confirm('確定刪除場地？')){ return; }
-    let court = courts[court_index];
-    courts.splice(court_index, 1);
-    court.users.forEach(users => {
-      users.forEach(user_id => {
-        user_set_status(user_id, 0, 'user_id');
-      })
+    swal({
+      title: '確定刪除場地？',
+      // text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '確定',
+      confirmButtonColor: '#3085d6',
+      cancelButtonText: '取消',
+      cancelButtonColor: '#d33',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        let court = courts[court_index];
+        courts.splice(court_index, 1);
+        court.users.forEach(users => {
+          users.forEach(user_id => {
+            user_set_status(user_id, 0, 'user_id');
+          })
+        });
+      }
     });
   }
   const court_start = (court_index) => {
@@ -529,18 +542,30 @@
   provide('user_view_index', user_view_index);
   const user_delete = (user_index) => {
     if (user_index < 0 && user_index > users.length) { return; }
-    if(!confirm('確定刪除此人？')){ return; }
-    let user = users[user_index];
-    courts.forEach((court, court_index) => {
-      court.users.forEach((group, group_index) => {
-        group.forEach((user_id, court_user_index) => {
-          if(user_id==user.id){ courts[court_index].users[group_index][court_user_index] = '0'; }
-        })
-      })
+    swal({
+      title: '確定刪除此人？',
+      // text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '確定',
+      confirmButtonColor: '#3085d6',
+      cancelButtonText: '取消',
+      cancelButtonColor: '#d33',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        let user = users[user_index];
+        courts.forEach((court, court_index) => {
+          court.users.forEach((group, group_index) => {
+            group.forEach((user_id, court_user_index) => {
+              if(user_id==user.id){ courts[court_index].users[group_index][court_user_index] = '0'; }
+            })
+          })
+        });
+        set_user_view(-1);
+        menu_open_left.value = false;
+        users.splice(user_index, 1); 
+      }
     });
-    set_user_view(-1);
-    menu_open_left.value = false;
-    users.splice(user_index, 1); 
   }
   provide('user_delete', user_delete);
 
