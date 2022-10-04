@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-db.js
+db.config.js
 
 # Editor directories and files
 .vscode/*

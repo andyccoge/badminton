@@ -32,6 +32,40 @@
     });
 
     const check_on_court = inject('check_on_court');
+
+    const contest_record = inject('contest_record');
+    const repeat_player = computed(()=> {
+        let repeat = false;
+        let all_player = [];
+        for (let x = 0; x < props.court.users.length; x++) {
+            for (let y = 0; y < props.court.users[x].length; y++) {
+                const element = props.court.users[x][y];
+                if(element!=0){ all_player.push(element); }
+            }
+        }
+
+        for (let i = 0; i < contest_record.length; i++) {
+            let same_player = 0;
+            const record = contest_record[i];
+            for (let x = 0; x < record.users.length; x++) {
+                for (let y = 0; y < record.users[x].length; y++) {
+                    const id = record.users[x][y];
+                    if(all_player.indexOf(id)!=-1){
+                        same_player += 1;
+                    }
+                }
+
+                if(same_player / all_player.length >= 0.75){
+                    repeat = true;
+                    break;
+                }
+            }
+
+            if(repeat){ break; }   
+        }
+        
+        return repeat;
+    });
 </script>
 
 <template>
@@ -49,9 +83,9 @@
                     <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="7" x2="20" y2="7" />  <line x1="10" y1="11" x2="10" y2="17" />  <line x1="14" y1="11" x2="14" y2="17" />  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
                 </button>
                 <template v-if="props.court.type==1">
-                    <button class="px-2" @click="court_repeat(props.court_index)">
+                    <!-- <button class="px-2" @click="court_repeat(props.court_index)">
                         <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3" />  <path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3-3l3-3" />  <path d="M11 11l1 -1v4" /></svg>
-                    </button>
+                    </button> -->
                     <button class="px-2" @click="court_next(props.court_index)">
                         <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <circle cx="5" cy="18" r="2" />  <circle cx="19" cy="6" r="2" />  <path d="M19 8v5a5 5 0 0 1 -5 5h-3l3 -3m0 6l-3 -3" />  <path d="M5 16v-5a5 5 0 0 1 5 -5h3l-3 -3m0 6l3 -3" /></svg>
                     </button>
@@ -62,6 +96,10 @@
              :class="[props.court.type==1 ? 'bg-green-500/80 hover:bg-green-600' : 'bg-yellow-500/80 hover:bg-yellow-600']"
         >
             <img :src="court_img" class="court_img w-full h-full absolute opacity-75 z-0"/>
+            <span class="alert_dot flex h-3 w-3 mr-2 absolute" v-if="repeat_player && court.type==0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-700 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
+            </span>
             <div class="flex items-center h-full z-10">
                 <div class="absolute h-full w-full flex items-center justify-center z-5">
                     <h3 class="text-center font-semibold sm:text-lg
@@ -109,9 +147,9 @@
                 </div>
             </div>
         </div>
-        <div class="w-full flex align-center justify-center" v-if="props.court.type==1">
+        <div class="w-full flex align-center justify-center relative" v-if="props.court.type==1">
             <div class="flex relative items-center justify-around py-1 sm:px-4 px-4 pr-1 bg-slate-800 text-white min-w-[50%] rounded-b">
-                <span class="alert_dot flex h-3 w-3 absolute" v-if="props.court.time <= 30 || !court.timer">
+                <span class="alert_dot flex h-3 w-3 absolute" v-if="props.court.time <= 10 || !court.timer">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-700 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
                 </span>

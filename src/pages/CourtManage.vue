@@ -5,30 +5,54 @@
   const swal = inject('$swal');
 
   // 資料庫初始化
-  import { db, db_auth, db_sign_in, get_db_data } from '../db.js';
+  import * as firebase from '../firebase.js';
   const db_login_modal = reactive({
     show: true, email: '', password:'',
   })
   const input_email = ref(null);
   const sign_in = () => {
-    db_sign_in(db_auth, db_login_modal.email, db_login_modal.password).then(() => {
+    firebase.db_sign_in(firebase.db_auth, db_login_modal.email, db_login_modal.password).then(() => {
+      toast.success('登入成功');
+
       db_login_modal.show = false;
-      console.log(get_db_data(db, 'users'))
+      console.log(firebase.get_db_data(firebase.db, 'users'));
+
+      /*避免重整*/
+      let check_renew = true;
+      window.onbeforeunload=function(e){
+        if(check_renew){
+          var e=window.event||e;
+          e.returnValue=("確定離開當前頁面嗎？");
+        }
+      }
     })
     .catch((error) => {
       console.log(error.message);
-      alert('登入失敗');
-      // location.href = '/404.html';
+      swal({
+        title: '登入失敗',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: '重新登入',
+        confirmButtonColor: '#3085d6',
+        cancelButtonText: '離開',
+        cancelButtonColor: '#d33',
+      }).then((result) => {
+        if(!result.isConfirmed){
+          location.href = '/index.html';
+        }
+      });
     });
   }
-  setTimeout(()=>{ input_email.value.focus(); alert('請先登入系統'); }, 100);
+  setTimeout(()=>{ 
+    input_email.value.focus();
+    toast.info('請先登入系統');
+  }, 100);
 
-  import Nav from './components/Nav.vue';
-  import Leftmenu from './components/Leftmenu.vue';
-  import Bottommenu from './components/Bottommenu.vue';
-  import Modal from './components/Modal.vue';
-  import Court from './components/Court.vue';
-
+  import Nav from '../components/Nav.vue';
+  import Leftmenu from '../components/Leftmenu.vue';
+  import Bottommenu from '../components/Bottommenu.vue';
+  import Modal from '../components/Modal.vue';
+  import Court from '../components/Court.vue';
   // 主頁場地-------------------------------------------------------------------------
   let court_empty_user = () => { return [[0,0],[0,0]]; }
   /* time:比賽時間秒數、timer：計時函數回傳值、type：1.比賽,0.預備 */
@@ -149,8 +173,9 @@
     }      
     pointModal.repeat_index = court_index;
     pointModal.finish_index = court_index;
-    pointModal.show = true;
-    setTimeout(()=>{ model_point_input.value.focus() }, 100);
+    court_complete();
+    // pointModal.show = true;
+    // setTimeout(()=>{ model_point_input.value.focus() }, 100);
   }
   const court_next = (court_index) => {
     let result = court_stop(court_index);
@@ -161,11 +186,14 @@
     if(check_court_empty(court_index)){
       court_complete();
     }else{
-      pointModal.show = true;
-      setTimeout(()=>{ model_point_input.value.focus() }, 100);
+      court_complete();
+      // pointModal.show = true;
+      // setTimeout(()=>{ model_point_input.value.focus() }, 100);
     }
   }
-  const court_complete = () =>{    
+  const court_complete = () =>{
+    let contest_data = copy_court(courts[pointModal.finish_index]);
+    contest_record.unshift(contest_data);
     /* TODO：儲存比賽紀錄 */
 
     /* 設定剛比完賽的人員 */
@@ -190,6 +218,8 @@
     }
     if(check_court_empty(pointModal.finish_index)){     
         toast.warning("目前已無預備人員，或預備人員正在場上");
+    }else{
+      toast.success(courts[pointModal.finish_index].name + " 已換下一場");
     }
     pointModal.show = false;
   }
@@ -279,12 +309,12 @@
     return copy;
   }
   const court_reset = (court_index, reset_user=false) => {
-    courts[court_index].time = court_empty.time;    /* 重置時間 */
-    courts[court_index].points = court_empty.points;/* 重置比數 */
-    clearInterval(courts[court_index].timer);       /* 清除計時 */
-    courts[court_index].timer = court_empty.timer;  /* 重置計時器 */
+    courts[court_index].time = court_empty.time;                /* 重置時間 */
+    courts[court_index].game_points = court_empty.game_points;  /* 重置比數 */
+    clearInterval(courts[court_index].timer);                   /* 清除計時 */
+    courts[court_index].timer = court_empty.timer;              /* 重置計時器 */
     if(reset_user){
-      courts[court_index].users = court_empty_user()/* 重設人員 */
+      courts[court_index].users = court_empty_user()            /* 重設人員 */
     }
   }
   provide('courts', readonly(courts));
@@ -588,6 +618,12 @@
   }
   provide('user_delete', user_delete);
 
+  // 比賽紀錄-------------------------------------------------------------------------
+  import ContestRecord from '../components/ContestRecord.vue';
+  let modal_open_contest_record = ref(false);
+  let contest_record = reactive([]);
+  provide('modal_open_contest_record', modal_open_contest_record);
+  provide('contest_record', readonly(contest_record));
 
   /*-- PWA功能 --*/
     /*加入主畫面-------------------------------*/
@@ -616,19 +652,10 @@
       });
     }
 </script>
-<script>
-  let check_renew = true;
-  window.onbeforeunload=function(e){
-    if(check_renew){
-      var e=window.event||e;
-      e.returnValue=("確定離開當前頁面嗎？");
-    }
-  }
-</script>
 
 <template>
   <!-- 登入授權資料庫 -->
-  <modal :show="db_login_modal.show" :click_bg_close="true" @close="db_login_modal.show = false;">
+  <modal :show="db_login_modal.show" :click_bg_close="false" @close="">
     <template #header>
       <h3 class="font-bold text-xl">登入授權資料庫</h3>
     </template>
@@ -762,12 +789,13 @@
       </button>
     </template>
   </modal>
+  <ContestRecord></ContestRecord>
 
-  <!-- <Nav></Nav> -->
+  <Nav></Nav>
   <Leftmenu></Leftmenu>
 
   <main>
-    <div class="bg-yellow-200 pb-6">
+    <div class="bg-yellow-200 pb-6 relative">
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==1"
@@ -787,7 +815,7 @@
     <hr class="">
 
     <div class="bg-yellow-200 pt-1 pb-6 relative">
-      <span class="absolute pl-8 pt-3 animate-bounce">
+      <span class="absolute pl-3 pt-3 animate-bounce">
         <svg class="h-8 w-8 text-yellow-400"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  <line x1="12" y1="5" x2="12" y2="19" />  <polyline points="19 12 12 19 5 12" /></svg>
       </span>
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">

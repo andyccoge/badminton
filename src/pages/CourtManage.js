@@ -1,11 +1,11 @@
 import { createApp } from 'vue'
-import Index from './Index.vue'
+import CourtManage from './CourtManage.vue'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
-const app = createApp(Index);
+const app = createApp(CourtManage);
 
 const options = {
     timeout: 3000,
@@ -19,7 +19,7 @@ app.mount('#app');
     /*初始化PWA*/
     if('serviceWorker' in navigator){
         navigator.serviceWorker
-            .register('sw.js')
+            .register('/src/sw.js')
             .then(function(){
                 console.log('Service Worker 註冊成功');
             }).catch(function(error) {

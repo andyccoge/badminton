@@ -3,7 +3,7 @@
 @tailwind utilities;
 @layer base {
     :root{     
-        --nav_h: 64px;
+        --nav_h: 32px;
     }
 
     body{

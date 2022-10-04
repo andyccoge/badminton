@@ -1,15 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-/* code from our Firebase console */
-const firebaseConfig = {
-    apiKey: "",
-    authDomain: "",
-    databaseURL: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
-};
+
+/* 載入設定 */
+import { firebaseConfig } from '../db.config.js';
 const firebase = initializeApp(firebaseConfig);
 
 export const db = getFirestore(firebase);

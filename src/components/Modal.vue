@@ -46,7 +46,7 @@
 <style>
     .modal-mask {
       position: fixed;
-      z-index: 9998;
+      z-index: 500;
       top: 0;
       left: 0;
       width: 100%;
@@ -62,7 +62,9 @@
     }
     
     .modal-container {
-      width: 300px;
+      width: fit-content;
+      min-width: 50%;
+      max-width: 100%;
       margin: 0px auto;
       padding: 20px 30px;
       background-color: #fff;
@@ -77,6 +79,8 @@
     
     .modal-body {
       margin: 20px 0;
+      max-height: 80vh;
+      overflow-y: scroll;
     }
     
     .modal-default-button {

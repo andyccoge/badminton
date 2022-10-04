@@ -1,33 +1,67 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
+<script setup>
+  import { inject } from 'vue';
+  import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+  import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+  const show_notify = false;
+  const show_head_icon = false;
+  const user = {
+    name: '',
+    email: '',
+    imageUrl: '/src/assets/img/user.png',
+  };
+  const navigation = [
+    // { name: 'Dashboard', href: '#', current: true },
+    // { name: 'Team', href: '#', current: false },
+    // { name: 'Projects', href: '#', current: false },
+    // { name: 'Calendar', href: '#', current: false },
+    // { name: 'Reports', href: '#', current: false },
+  ];
+  const userNavigation = [
+    // { name: 'Your Profile', href: '#' },
+    // { name: 'Settings', href: '#' },
+    // { name: 'Sign out', href: '#' },
+  ];
+
+  let modal_open_contest_record = inject('modal_open_contest_record');
+</script>
+
 <template>
-    <div class="min-h-full">
-      <Disclosure as="nav" class="bg-yellow-500" v-slot="{ open }">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex h-16 items-center justify-between">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <img class="h-8 w-8" src="/src/assets/img/favicon.ico" alt="羽球排場系統" />
-              </div>
-              <div class="hidden md:block">
-                <div class="ml-10 flex items-baseline space-x-4">
-                  <a v-for="item in navigation" :key="item.name" :href="item.href" :class="[item.current ? 'bg-yellow-600 text-white' : 'text-yellow-900 hover:bg-yellow-700 hover:text-white', 'px-3 py-2 rounded-md text-sm font-medium']" :aria-current="item.current ? 'page' : undefined">{{ item.name }}</a>
-                </div>
-              </div>
+  <div class="min-h-full">
+    <Disclosure as="nav" class="bg-yellow-500" v-slot="{ open }">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-8 items-center justify-between">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <img class="h-6 w-6" src="/src/assets/img/favicon.ico" alt="羽球排場系統" />
             </div>
             <div class="hidden md:block">
-              <div class="ml-4 flex items-center md:ml-6">
-                <button v-if="show_notify"
-                        type="button" class="rounded-full bg-yellow-600 p-1 text-yellow-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
+              <div class="ml-10 flex items-baseline space-x-4">
+                <a v-for="item in navigation" :key="item.name" :href="item.href" :class="[item.current ? 'bg-yellow-600 text-white' : 'text-yellow-900 hover:bg-yellow-700 hover:text-white', 'px-3 py-2 rounded-md text-sm font-medium']" :aria-current="item.current ? 'page' : undefined">{{ item.name }}</a>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <button class="rounded-2xl p-0.5 aspect-square border-2 bg-yellow-300 border-yellow-600" @click="modal_open_contest_record=true">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5" />
+              </svg>
+            </button>
+            <div class="hidden md:block" v-if="userNavigation.length>0 || show_notify">
+              <div class="flex items-center">
+                <button type="button" v-if="show_notify"
+                        class="rounded-full ml-2 p-1 focus:outline-none focus:ring-2
+                            bg-yellow-600 text-yellow-400 hover:text-white focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
                   <span class="sr-only">View notifications</span>
-                  <BellIcon class="h-6 w-6" aria-hidden="true" />
+                  <BellIcon class="h-4 w-4" aria-hidden="true" />
                 </button>
-  
                 <!-- Profile dropdown -->
-                <Menu as="div" class="relative ml-3">
+                <Menu as="div" class="relative ml-3" v-if="userNavigation.length>0 || show_head_icon">
                   <div>
-                    <MenuButton class="flex max-w-xs items-center rounded-full bg-yellow-600 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
+                    <MenuButton class="flex max-w-xs items-center rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2
+                                      bg-yellow-600 text-sm focus:ring-white focus:ring-offset-yellow-600">
                       <span class="sr-only">Open user menu</span>
-                      <img class="h-8 w-8 rounded-full" :src="user.imageUrl" :alt="user.name" v-if="show_head_icon"/>
+                      <img class="h-6 w-6 rounded-full" :src="user.imageUrl" :alt="user.name" v-if="show_head_icon"/>
                     </MenuButton>
                   </div>
                   <transition v-if="userNavigation.length>0"
@@ -41,75 +75,53 @@
                 </Menu>
               </div>
             </div>
-            <div class="-mr-2 flex md:hidden">
+            <div class="ml-2 flex md:hidden" v-if="navigation.length>0 || show_head_icon">
               <!-- Mobile menu button -->
-              <DisclosureButton class="inline-flex items-center justify-center rounded-md bg-yellow-600 p-2 text-yellow-400 hover:bg-yellow-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
+              <DisclosureButton class="inline-flex items-center justify-center rounded-md bg-yellow-600 p-1 text-yellow-400 hover:bg-yellow-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
                 <span class="sr-only">Open main menu</span>
-                <Bars3Icon v-if="!open" class="block h-6 w-6" aria-hidden="true" />
-                <XMarkIcon v-else class="block h-6 w-6" aria-hidden="true" />
+                <Bars3Icon v-if="!open" class="block h-4 w-4" aria-hidden="true" />
+                <XMarkIcon v-else class="block h-4 w-4" aria-hidden="true" />
               </DisclosureButton>
             </div>
           </div>
         </div>
-  
-        <DisclosurePanel class="md:hidden">
-          <div class="space-y-1 px-2 pt-2 pb-3 sm:px-3" v-if="navigation.length>0">
-            <DisclosureButton v-for="item in navigation" :key="item.name" as="a" :href="item.href" :class="[item.current ? 'bg-yellow-700 text-white' : 'text-yellow-900 hover:bg-yellow-700 hover:text-white', 'block px-3 py-2 rounded-md text-base font-medium']" :aria-current="item.current ? 'page' : undefined">{{ item.name }}</DisclosureButton>
-          </div>
-          <div class="border-t border-yellow-700 pt-4 pb-3" v-if="show_head_icon">
-            <div class="flex items-center px-5">
-              <div class="flex-shrink-0">
-                <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
-              </div>
-              <div class="ml-3">
-                <div class="text-base font-medium leading-none text-white">{{ user.name }}</div>
-                <div class="text-sm font-medium leading-none text-yellow-900">{{ user.email }}</div>
-              </div>
-              <button type="button" v-if="show_notify"
-                      class="ml-auto flex-shrink-0 rounded-full bg-yellow-600 p-1 text-yellow-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
-                <span class="sr-only">View notifications</span>
-                <BellIcon class="h-6 w-6" aria-hidden="true" />
-              </button>
+      </div>
+
+      <DisclosurePanel class="md:hidden">
+        <div class="space-y-1 px-2 pt-2 pb-3 sm:px-3" v-if="navigation.length>0">
+          <DisclosureButton v-for="item in navigation" :key="item.name" as="a" :href="item.href" :class="[item.current ? 'bg-yellow-700 text-white' : 'text-yellow-900 hover:bg-yellow-700 hover:text-white', 'block px-3 py-2 rounded-md text-base font-medium']" :aria-current="item.current ? 'page' : undefined">{{ item.name }}</DisclosureButton>
+        </div>
+        <div class="border-t border-yellow-700 pt-4 pb-3" v-if="show_head_icon">
+          <div class="flex items-center px-5">
+            <div class="flex-shrink-0">
+              <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
             </div>
-            <div class="mt-3 space-y-1 px-2" v-if="userNavigation.length>0">
-              <DisclosureButton v-for="item in userNavigation" :key="item.name" as="a" :href="item.href" class="block rounded-md px-3 py-2 text-base font-medium text-yellow-900 hover:bg-yellow-700 hover:text-white">{{ item.name }}</DisclosureButton>
+            <div class="ml-3">
+              <div class="text-base font-medium leading-none text-white">{{ user.name }}</div>
+              <div class="text-sm font-medium leading-none text-yellow-900">{{ user.email }}</div>
             </div>
+            <button type="button" v-if="show_notify"
+                    class="ml-auto flex-shrink-0 rounded-full bg-yellow-600 p-1 text-yellow-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
+              <span class="sr-only">View notifications</span>
+              <BellIcon class="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
-        </DisclosurePanel>
-      </Disclosure>
-    </div>
-    <div class="nav_blank"></div>
-  </template>
-  
-  <script setup>
-  import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-  import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
-  const show_notify = false;
-  const show_head_icon = true;
-  const user = {
-    name: '人員1',
-    email: 'test@example.com',
-    imageUrl: '/src/assets/img/user.png',
-  }
-  const navigation = [
-    // { name: 'Dashboard', href: '#', current: true },
-    // { name: 'Team', href: '#', current: false },
-    // { name: 'Projects', href: '#', current: false },
-    // { name: 'Calendar', href: '#', current: false },
-    // { name: 'Reports', href: '#', current: false },
-  ]
-  const userNavigation = [
-    // { name: 'Your Profile', href: '#' },
-    // { name: 'Settings', href: '#' },
-    // { name: 'Sign out', href: '#' },
-  ]
-  </script>
-  <style scoped>
+          <div class="mt-3 space-y-1 px-2" v-if="userNavigation.length>0">
+            <DisclosureButton v-for="item in userNavigation" :key="item.name" as="a" :href="item.href" class="block rounded-md px-3 py-2 text-base font-medium text-yellow-900 hover:bg-yellow-700 hover:text-white">{{ item.name }}</DisclosureButton>
+          </div>
+        </div>
+      </DisclosurePanel>
+    </Disclosure>
+  </div>
+  <div class="nav_blank"></div>
+</template>
+
+<style scoped>
     nav{
         width: 100%;
         top: 0;
         position: fixed;
-        z-index: 99;
+        z-index: 15;
     }
     .nav_blank{
       padding-top: var(--nav_h);
