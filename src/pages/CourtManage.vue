@@ -10,12 +10,13 @@
     show: true, email: '', password:'',
   })
   const input_email = ref(null);
-  const sign_in = () => {
-    firebase.db_sign_in(firebase.db_auth, db_login_modal.email, db_login_modal.password).then(() => {
+  const sign_in = async() => {
+    firebase.db_sign_in(db_login_modal.email, db_login_modal.password).then(async() => {
       toast.success('登入成功');
 
       db_login_modal.show = false;
-      console.log(firebase.get_db_data(firebase.db, 'users'));
+      let data_users = await firebase.get_db_data('users');
+      console.log(data_users);
 
       /*避免重整*/
       let check_renew = true;
