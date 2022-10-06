@@ -3,6 +3,7 @@ import {
     getFirestore, collection, getDocs, 
     doc, addDoc, updateDoc, writeBatch,
     query, where, orderBy, 
+    deleteDoc,
 } from 'firebase/firestore/lite';
 
 /* 載入設定 */
@@ -54,4 +55,9 @@ export async function set_data(table, data) {
 export async function update_data(table, id, data) {
     const docRef = doc(firebase_db, table, id);
     await updateDoc(docRef, data);
+}
+
+export async function delete_data(table, id) {
+    const docRef = doc(firebase_db, table, id);
+    await deleteDoc(docRef);
 }

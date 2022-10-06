@@ -49,10 +49,10 @@
         await get_play_users();
         
         /*避免重整*/
-        // window.onbeforeunload=function(e){
-        //   var e=window.event||e;
-        //   e.returnValue=("確定離開當前頁面嗎？");
-        // }
+        window.onbeforeunload=function(e){
+          var e=window.event||e;
+          e.returnValue=("確定離開當前頁面嗎？");
+        }
       } else {
         db_login_modal.show = true
         setTimeout(()=>{ 
@@ -347,7 +347,7 @@
   provide('court_repeat', court_repeat);
   provide('court_next', court_next);
 
-  // 新增/編輯人員
+  // 新增/編輯人員-------------------------------------------------------------------------
   let userModal = reactive({ 
     show:false, index:-1, 
     user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0}

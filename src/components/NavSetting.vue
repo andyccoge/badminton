@@ -11,12 +11,16 @@
       imageUrl: '/src/assets/img/user.png',
     };
     const navigation = [
-      { name: '人員列表', href: '#', current: true },
-      { name: '打球日管理', href: '#', current: false },
-      // { name: 'Projects', href: '#', current: false },
-      // { name: 'Calendar', href: '#', current: false },
-      // { name: 'Reports', href: '#', current: false },
+      { name: '人員列表', href: '/pages/setting_users.html', page:'setting_users', current: false },
+      { name: '打球日管理', href: '/pages/setting_date.html', page:'setting_date', current: false },
+      // { name: 'Projects', href: '#', page:'', current: false },
     ];
+    const active_nav = location.href.split('/').pop().split('.')[0];
+    for (let x = 0; x < navigation.length; x++) {
+      if(navigation[x].page==active_nav){
+        navigation[x].current = true; break;
+      } 
+    }
     const userNavigation = [
       // { name: 'Your Profile', href: '#' },
       // { name: 'Settings', href: '#' },

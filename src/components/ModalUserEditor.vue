@@ -6,7 +6,7 @@
   import Modal from '../components/Modal.vue';
   import BodyBlock from '../components/BodyBlock.vue';
   const toast = useToast();
-  // const swal = inject('$swal');
+  const swal = inject('$swal');
   let body_block_show = ref(false);
 
   /* level：等級、played：已比場數、wait：等候場數、status:狀態0.閒置 1.場上 */
@@ -44,23 +44,46 @@
     let target_user = {};
     if(!userModal.user.name){ toast.warning("請輸入姓名");return; }
     userModal_keys.forEach(key => { target_user[key] = userModal.user[key] });
-    if(userModal.index==-1){
-      userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
-    }
 
     body_block_show.value = true;
     /* TODO：新增/編輯人員資料 */
     if(userModal.index==-1){
-      let target_user_id = await firebase.add_data('users', target_user);
-      target_user.id = target_user_id;
+      let repeat_user = await firebase.get_db_data('users', [['name', '==', target_user.name]]);
+      if(repeat_user.length>0){
+        await swal({
+          title: '發現重複資料，確定新增？',
+          text: "",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: '確定',
+          confirmButtonColor: '#3085d6',
+          cancelButtonText: '取消',
+          cancelButtonColor: '#d33',
+        }).then(async(result) => {
+          if (result.isConfirmed) {
+            let target_user_id = await firebase.add_data('users', target_user);
+            target_user.id = target_user_id;
+          }else{
+            target_user = null;
+          }
+        });
+      }else{
+        let target_user_id = await firebase.add_data('users', target_user);
+        target_user.id = target_user_id;
+      }
     }else{
       await firebase.update_data('users', target_user.id, target_user);
     }
     body_block_show.value = false;
 
-    toast.success("資料已儲存");
-    if(change_user_data){
-      change_user_data(userModal.index, target_user);
+    if(target_user){
+      toast.success("資料已儲存");
+      if(userModal.index==-1){
+        userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
+      }
+      if(change_user_data){
+        change_user_data(userModal.index, target_user);
+      }
     }
   }
 </script>
