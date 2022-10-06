@@ -36,7 +36,7 @@
                 </thead>
                 <tbody class="flex-1 sm:flex-none">
                     <tr v-for="(record, index) in contest_record"
-                        class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 hover:bg-gray-100">
+                        class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
                         <td class="border-grey-light border p-2"><span v-text="index+1"></span></td>
                         <td class="border-grey-light border p-2">
                             <span v-text="get_user_name(record.users[0][0])"></span>

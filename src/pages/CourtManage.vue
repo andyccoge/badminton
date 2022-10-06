@@ -1,33 +1,28 @@
 <script setup>
   import { ref, reactive, provide, readonly, computed, inject, onMounted } from 'vue';
   import { useToast } from "vue-toastification";
+  import * as firebase from '../firebase.js';
+  import Nav from '../components/Nav.vue';
+  import Leftmenu from '../components/Leftmenu.vue';
+  import Bottommenu from '../components/Bottommenu.vue';
+  import Modal from '../components/Modal.vue';
+  import ModalUserEditor from '../components/ModalUserEditor.vue';
+  import Court from '../components/Court.vue';
+  import ContestRecord from '../components/ContestRecord.vue';
   const toast = useToast();
   const swal = inject('$swal');
 
   // 資料庫初始化
-  import * as firebase from '../firebase.js';
   const db_login_modal = reactive({
-    show: true, email: '', password:'',
+    show: false, email: '', password:'',
   })
   const input_email = ref(null);
   const sign_in = async() => {
-    firebase.db_sign_in(db_login_modal.email, db_login_modal.password).then(async() => {
+    try {
+      await firebase.db_sign_in(db_login_modal.email, db_login_modal.password);
       toast.success('登入成功');
-
       db_login_modal.show = false;
-      let data_users = await firebase.get_db_data('users');
-      console.log(data_users);
-
-      /*避免重整*/
-      let check_renew = true;
-      window.onbeforeunload=function(e){
-        if(check_renew){
-          var e=window.event||e;
-          e.returnValue=("確定離開當前頁面嗎？");
-        }
-      }
-    })
-    .catch((error) => {
+    } catch (error) {
       console.log(error.message);
       swal({
         title: '登入失敗',
@@ -42,29 +37,54 @@
           location.href = '/index.html';
         }
       });
+    }
+  }
+  const db_sign_out = () => {
+    firebase.db_sign_out();
+  }
+  provide('db_sign_out', db_sign_out);
+  onMounted (() => {
+    firebase.db_auth.onAuthStateChanged(async(user) => {
+      if (user) {
+        await get_play_users();
+        
+        /*避免重整*/
+        // window.onbeforeunload=function(e){
+        //   var e=window.event||e;
+        //   e.returnValue=("確定離開當前頁面嗎？");
+        // }
+      } else {
+        db_login_modal.show = true
+        setTimeout(()=>{ 
+            input_email.value.focus();
+            toast.info('請先登入系統');
+        }, 100);
+      }
+    });
+  })
+  const get_play_users = async() => {
+    let users_data = await firebase.get_db_data('users');
+    users_data.forEach(data => {
+      add_show_user(data);
     });
   }
-  setTimeout(()=>{ 
-    input_email.value.focus();
-    toast.info('請先登入系統');
-  }, 100);
+  const add_show_user = (data) => {
+    data = {...data, ...user_play_data_empty};
+    users.push(data);
+    users_by_teams[0].push(data.id);
+  }
 
-  import Nav from '../components/Nav.vue';
-  import Leftmenu from '../components/Leftmenu.vue';
-  import Bottommenu from '../components/Bottommenu.vue';
-  import Modal from '../components/Modal.vue';
-  import Court from '../components/Court.vue';
   // 主頁場地-------------------------------------------------------------------------
   let court_empty_user = () => { return [[0,0],[0,0]]; }
   /* time:比賽時間秒數、timer：計時函數回傳值、type：1.比賽,0.預備 */
   const court_empty = {id:null, name:'', time:0, timer:null, type:0, game_points:[0,0], users:court_empty_user()};
   let court_empty_keys = Object.keys(court_empty);
   let courts = reactive([
-    {id:0, name:'場地一', time:0, timer:null, type:1, game_points:[0,0], users:[[0,2],[3,4]]},
+    {id:0, name:'場地一', time:0, timer:null, type:1, game_points:[0,0], users:[[0,0],[0,0]]},
     {id:1, name:'場地二', time:0, timer:null, type:1, game_points:[0,0], users:[[0,0],[0,0]]},
     {id:2, name:'場地三', time:0, timer:null, type:1, game_points:[0,0], users:[[0,0],[0,0]]},
-    {id:3, name:'場地四', time:0, timer:null, type:1, game_points:[0,0], users:[[5,0],[7,0]]},
-    {id:4, name:'預備1', time:0, timer:null, type:0, game_points:[0,0], users:[[5,0],[7,0]]},
+    {id:3, name:'場地四', time:0, timer:null, type:1, game_points:[0,0], users:[[0,0],[0,0]]},
+    {id:4, name:'預備1', time:0, timer:null, type:0, game_points:[0,0], users:[[0,0],[0,0]]},
     {id:5, name:'預備2', time:0, timer:null, type:0, game_points:[0,0], users:[[0,0],[0,0]]},
   ]);  
   const court_name = ref(null);
@@ -327,6 +347,40 @@
   provide('court_repeat', court_repeat);
   provide('court_next', court_next);
 
+  // 新增/編輯人員
+  let userModal = reactive({ 
+    show:false, index:-1, 
+    user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0}
+  });
+  const userModal_open = (user_index=-1) => {
+    // menu_open_bottom.value = true;
+    userModal.show = true;
+    userModal.index = user_index;
+    if(user_index!=-1){ userModal.user = Object.assign({}, users[user_index]); }
+  }
+  const userModal_open_id = (user_id=-1) => {
+    for (let index = 0; index < users.length; index++) {
+      if(users[index].id==user_id){
+        userModal_open(index);
+        break;
+      }
+    }
+  }
+  provide('userModal', userModal);
+  provide('userModal_open', userModal_open);
+  provide('userModal_open_id', userModal_open_id);
+  const change_user_data = (user_index, user_data) => {
+    console.log(user_data);
+    console.log(userModal.index);
+    if(userModal.index==-1){
+      add_show_user(user_data);
+    }else{
+      let user_keys = Object.keys(user_data);
+      user_keys.forEach(key => { users[user_index][key] = user_data[key] });
+    }
+  }
+  provide('change_user_data', change_user_data);
+
   // 下方人員面板-------------------------------------------------------------------------
   let menu_open_bottom = ref(false);
   provide('menu_open_bottom', menu_open_bottom);
@@ -353,77 +407,18 @@
   provide('grouping_users_mode', grouping_users_mode);
   provide('grouping_users_toggle', grouping_users_toggle);
 
-  /* level：等級、played：已比場數、wait：等候場數、status:狀態0.閒置 1.場上 */
-  const user_empty = {id:null, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0};
-  let userModal_keys = Object.keys(user_empty);
-  let userModal = reactive({ 
-    show:false, index:-1, 
-    user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0}
-  });
-  const userModal_user_name = ref(null);
-  const userModal_user_level = ref(null);
-  const userModal_open = (user_index=-1) => {
-    // menu_open_bottom.value = true;
-    userModal.show = true;
-    userModal.index = user_index;
-    setTimeout(()=>{ userModal_user_name.value.focus() }, 100);
-    if(user_index==-1){
-      userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
-    }else{
-      userModal_keys.forEach(key => { userModal.user[key] = users[user_index][key] });
-    }
-  }
-  const userModal_open_id = (user_id=-1) => {
-    for (let index = 0; index < users.length; index++) {
-      if(users[index].id==user_id){
-        userModal_open(index);
-        break;
-      }
-    }
-  }
-  provide('userModal_open', userModal_open);
-  provide('userModal_open_id', userModal_open_id);
-  
-  const user_save = () => {
-    if(!userModal.user.name){ toast.warning("請輸入姓名");return; }
-    if(userModal.index==-1){
-      let new_user = {};
-      userModal_keys.forEach(key => { new_user[key] = userModal.user[key] });
-      users.push(new_user);
-      userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
-    }
-    else{
-      userModal_keys.forEach(key => { users[userModal.index][key] = userModal.user[key] });
-    }
-
-    /* TODO：新增/編輯人員資料 */
-    let new_user_id = users.length>=2 ? users[users.length-2].id + 1 : 0;
-    if(userModal.index==-1){
-      users[users.length-1].id = new_user_id;
-      users_by_teams[0].push(new_user_id);
-    }
-
-    toast.success("資料已儲存");
-  }
-
+  const user_play_data_empty = {played:0, wait:0, status:0};
   let users = reactive([
-    {id:1, name:'人員1', nick:'人1', gender:"女", level:2, phone:'', email:'', played:0, wait:0, status:0},
-    {id:2, name:'人員2', nick:'', gender:"男", level:5, phone:'', email:'', played:0, wait:0, status:1},
-    {id:3, name:'人員3', nick:'人3', gender:"男", level:3, phone:'', email:'', played:0, wait:0, status:1},
-    {id:4, name:'人員4', nick:'人4', gender:"女", level:1, phone:'', email:'', played:0, wait:0, status:1},
-    {id:5, name:'人員5', nick:'人5', gender:"女", level:2, phone:'', email:'', played:0, wait:0, status:1},
-    {id:6, name:'人員6', nick:'人6', gender:"男", level:2, phone:'', email:'', played:0, wait:0, status:0},
-    {id:7, name:'人員7', nick:'人7', gender:"男", level:2, phone:'', email:'', played:0, wait:0, status:1},
-    {id:8, name:'人員8', nick:'人8', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
-    {id:9, name:'人員9', nick:'人9', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
-    {id:10, name:'人員10', nick:'人10', gender:"女", level:3, phone:'', email:'', played:0, wait:0, status:0},
+    // {id:1, name:'人員1', nick:'人1', gender:"女", level:2, phone:'', email:'', played:0, wait:0, status:0},
+    // {id:2, name:'人員2', nick:'人2', gender:"男", level:5, phone:'', email:'', played:0, wait:0, status:1},
   ]);
   let users_by_teams = reactive([[...users.map((user=>{return user.id}))]]);
+  provide('users_by_teams', readonly(users_by_teams));
+  provide('users', readonly(users));
+
   let team_select_uesr_ids = ref([]);
   let played_user_ids = ref([]);
   const users_rest = computed(()=> { return users.filter(user => user.status==0)});
-  provide('users', readonly(users));
-  provide('users_by_teams', readonly(users_by_teams));
   provide('team_select_uesr_ids', readonly(team_select_uesr_ids));
   provide('users_rest', readonly(users_rest));
   const get_user_name = (user_id) => {
@@ -620,7 +615,6 @@
   provide('user_delete', user_delete);
 
   // 比賽紀錄-------------------------------------------------------------------------
-  import ContestRecord from '../components/ContestRecord.vue';
   let modal_open_contest_record = ref(false);
   let contest_record = reactive([]);
   provide('modal_open_contest_record', modal_open_contest_record);
@@ -729,51 +723,9 @@
       </button>
     </template>
   </modal>
-  <!-- 新增/編輯人員 -->
-  <modal :show="userModal.show" @close="userModal.show = false;">
-    <template #header>
-      <h3 class="font-bold text-xl" v-if="userModal.index==-1">新增人員</h3>
-      <h3 class="font-bold text-xl" v-if="userModal.index!=-1">編輯人員</h3>
-    </template>
-    <template #body>
-      <div class="mb-2">
-        姓名：<input type="text" class="form-input px-1 py-1 rounded w-full" ref="userModal_user_name"
-                     v-model="userModal.user.name" @keypress.enter="user_save"/>
-      </div>
-      <div class="mb-2">
-        綽號：<input type="text" class="form-input px-1 py-1 rounded w-full" ref="userModal_user_nick"
-                     v-model="userModal.user.nick" @keypress.enter="user_save"/>
-      </div>
-      <div class="mb-2">
-        性別：
-        <input type="radio" id="gender_1" ref="userModal_user_gender_男" value="男" class="mr-1"
-                     v-model="userModal.user.gender" @click="userModal_user_level.focus()"/>
-        <label for="gender_1" class="mr-4">男</label>
-        <input type="radio" id="gender_0" ref="userModal_user_gender_女" value="女" class="mr-1"
-                     v-model="userModal.user.gender" @click="userModal_user_level.focus()"/>
-        <label for="gender_0">女</label>
-      </div>
-      <div class="mb-2">
-        等級：<input type="number" class="form-input px-1 py-1 rounded w-full" ref="userModal_user_level"  min="0" step="1"
-                     v-model="userModal.user.level" @keypress.enter="user_save"/>
-      </div>
-      <div class="mb-2">
-        電話：<input type="text" class="form-input px-1 py-1 rounded w-full" ref="userModal_user_phone"
-                     v-model="userModal.user.phone" @keypress.enter="user_save"/>
-      </div>
-      <div class="mb-2">
-        信箱：<input type="email" class="form-input px-1 py-1 rounded w-full" ref="userModal_user_email"
-                     v-model="userModal.user.email" @keypress.enter="user_save"/>
-      </div>
-    </template>
-    <template #footer>
-      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="'bg-red-500 hover:bg-red-400 text-white border-red-700 hover:border-red-500'"
-              @click="user_save">
-        確認儲存
-      </button>
-    </template>
-  </modal>
+
+  <ModalUserEditor></ModalUserEditor>
+
   <!-- 加入主頁面 -->
   <modal :show="modal_open_add_home!=null" :click_bg_close="true" @close="modal_open_add_home=null;">
     <template #header>
@@ -808,7 +760,7 @@
       <div class="container mx-auto mt-4">
         <button id="show-modal" @click="courtModal_add(1)"
                 class="w-full font-bold py-2 px-4 border-b-4 rounded
-                    bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500">
+                    bg-green-500 hover:bg-green-400 text-white border-green-700 hover:border-green-500">
           新增比賽場地
         </button>
       </div>

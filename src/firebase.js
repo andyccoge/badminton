@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { 
     getFirestore, collection, getDocs, 
     doc, addDoc, updateDoc, writeBatch,
-    query, where
+    query, where, orderBy, 
 } from 'firebase/firestore/lite';
 
 /* 載入設定 */
@@ -15,25 +15,26 @@ export const db_auth = getAuth();
 export async function db_sign_in(email, pasaword){ 
     signInWithEmailAndPassword(db_auth, email, pasaword)
 };
+export function db_sign_out(redirect_url=''){
+    db_auth.signOut();
+    location.href = redirect_url ? redirect_url : "/";
+}
 
 export async function get_db_data(table, cond=[]) {
-    let where_query = [];
+    let sql_query = [orderBy("create_time", "desc")];
     cond.forEach(element => {
-        where_query.push( where(...element) );
-        /* ["state", "==", "CA"] */
-        /* ["state", "not-in", ['USA', 'Japan']] */
-        /* ['regions', 'array-contains-any', ['west_coast', 'east_coast']] */
+        console.log(...element);
+        sql_query.push( where(...element) );
+        /* https://firebase.google.com/docs/firestore/query-data/queries?hl=zh-cn */
     });
-    const q = query(collection(firebase_db, table), ...where_query);
-    console.log(q);
-
-    const collection_obj = collection(firebase_db, table);
-    const docs_obj = await getDocs(collection_obj);
+    const q = query(collection(firebase_db, table), ...sql_query);
+    const docs_obj = await getDocs(q);
     const dataList = docs_obj.docs.map(doc => doc.data());
     return dataList;
 }
 
 export async function add_data(table, data) {
+    data['create_time'] = Date.now();
     let docRef = await addDoc(collection(firebase_db, table), data);
     let docRef_new = doc(firebase_db, table, docRef.id);
     await updateDoc(docRef_new, {id: docRef.id});
