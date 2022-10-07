@@ -24,7 +24,7 @@
   }
   const change_date_data = (target_index, data) => {
     if(refModalDate.value.dataModal.index==-1){
-      dates.push(data);
+      dates.unshift(data);
     }else{
       let keys = Object.keys(data);
       keys.forEach(key => { dates[target_index][key] = data[key] });

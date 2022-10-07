@@ -89,6 +89,8 @@
       toast.success("資料已儲存");
       if(dataModal.index==-1){
         dataModal_keys.forEach(key => { dataModal.data[key] = data_empty[key] });
+        /* 額外處理日期資料 */
+        dataModal_date.value = '';
       }
       emit('change_data', dataModal.index, target);
     }

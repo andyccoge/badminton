@@ -23,7 +23,7 @@
   }
   const change_user_data = (user_index, user_data) => {
     if(refModalUserEditor.value.userModal.index==-1){
-      users.push(user_data)
+      users.unshift(user_data)
     }else{
       let user_keys = Object.keys(user_data);
       user_keys.forEach(key => { users[user_index][key] = user_data[key] });
