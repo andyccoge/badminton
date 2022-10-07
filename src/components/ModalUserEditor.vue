@@ -38,7 +38,6 @@
     userModal_keys.forEach(key => { target_user[key] = userModal.user[key] });
 
     body_block_show.value = true;
-    /* TODO：新增/編輯人員資料 */
     if(userModal.index==-1){
       let repeat_user = await firebase.get_db_data('users', [['name', '==', target_user.name]]);
       if(repeat_user.length>0){

@@ -119,7 +119,7 @@
                                             @click.self="court_chage_user(props.court_index, group_index, user_index)"
                                             v-text="get_user_name(user_id)" >
                                         </span>
-                                        <span class="hidden court_user_panel absolute bg-slate-800 w-fit rounded px-2" v-if="user_id!=0">
+                                        <span class="hidden court_user_panel absolute bg-slate-800 w-fit rounded px-1 flex-col sm:flex-row" v-if="user_id!=0">
                                             <button class="py-1 mx-2" @click="toggle_menu_open_left_id(user_id)">
                                                 <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -177,7 +177,7 @@
     }
 
     .court_user_panel{
-        bottom: -1.75rem;
+        /* bottom: -1.75rem; */
     }
     .name_tag:hover .court_user_panel{
         display: flex;
