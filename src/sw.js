@@ -41,20 +41,20 @@ self.addEventListener('push', function (event) {
 
 /*定義操作通知的事件*/
 self.addEventListener('notificationclick', function(event) {
-    var notification = event.notification;
-    console.log(notification);
+  var notification = event.notification;
+  console.log(notification);
 
-    /*判斷點擊事件*/
-    var action = event.action;
-    if(action === 'cancel') {
-        notification.close();
-        return;
-    }
-
-    open_url = notification.data.open_url
+  /*判斷點擊事件*/
+  var action = event.action;
+  if(action === 'cancel') {
     notification.close();
-    if(open_url != ''){
-        open_url = open_url.includes("http") ? open_url : 'http://' + open_url
-        clients.openWindow(open_url);
-    }
+    return;
+  }
+
+  open_url = notification.data.open_url
+  notification.close();
+  if(open_url != ''){
+    open_url = open_url.includes("http") ? open_url : 'http://' + open_url
+    clients.openWindow(open_url);
+  }
 });

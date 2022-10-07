@@ -1,6 +1,5 @@
 <script setup>
-  import { async } from '@firebase/util';
-  import { ref, reactive, inject, watch } from 'vue';
+  import { ref, reactive, inject } from 'vue';
   import * as firebase from '../firebase.js';
   import { useToast } from "vue-toastification";
   import Modal from '../components/Modal.vue';
@@ -9,37 +8,30 @@
   const swal = inject('$swal');
   let body_block_show = ref(false);
 
+  let userModal  = reactive({ 
+    show:false, index:-1, 
+    user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0}
+  });
+  const emit = defineEmits(['change_user_data']);
+
   /* level：等級、played：已比場數、wait：等候場數、status:狀態0.閒置 1.場上 */
   const user_empty = {id:null, name:'', nick:'', gender:"", level:0, phone:'', email:''};
   let userModal_keys = Object.keys(user_empty);
-  let userModal = inject('userModal') ? inject('userModal') : reactive({ 
-    show:false, index:-1, 
-    user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:''}
-  });
   const userModal_user_name = ref(null);
   const userModal_user_level = ref(null);
-  watch(
-    [() => userModal.show],
-    (nV, oV) => {
-      if(nV[0]==true){
-        setTimeout(()=>{ userModal_user_name.value.focus() }, 100);
-      }
-    }, 
-    {immediate: true}
-  );
-  watch(
-    [() => userModal.index], 
-    (nV, oV) => {
-      if(nV!=oV){
-        if(nV==-1){
-          userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
-        }
-      }
-    }, 
-    {immediate: true}
-  );
 
-  const change_user_data = inject('change_user_data');
+  /* 設定跳出視窗內的人員資料 */
+  const set_user = (user_index, target_user) => {
+    userModal.show = true;
+    userModal.index = user_index;
+    if(target_user){
+      userModal.user = target_user;
+    }else{
+      userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
+    }
+    setTimeout(()=>{ userModal_user_name.value.focus() }, 100);
+  }
+
   const user_save = async() => {
     let target_user = {};
     if(!userModal.user.name){ toast.warning("請輸入姓名");return; }
@@ -81,11 +73,14 @@
       if(userModal.index==-1){
         userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
       }
-      if(change_user_data){
-        change_user_data(userModal.index, target_user);
-      }
+      emit('change_user_data', userModal.index, target_user);
     }
   }
+
+  defineExpose({
+    userModal,
+    set_user,
+  })
 </script>
 
 <template>

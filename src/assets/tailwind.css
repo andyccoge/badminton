@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 @layer base {
-    :root{     
-        --nav_h: 32px;
-    }
+  :root{     
+    --nav_h: 32px;
+  }
 
-    body{
-        -webkit-user-select:none;
-        -moz-user-select:none;
-        -o-user-select:none;
-        user-select:none;
-    }
+  body{
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -o-user-select:none;
+    user-select:none;
+  }
 }

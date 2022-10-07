@@ -1,8 +1,9 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <script setup>
     import { inject } from 'vue';
-    import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-    import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+    import { db_sign_out } from '../firebase.js';
+    import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
+    import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline';
     const show_notify = false;
     const show_head_icon = false;
     const user = {
@@ -30,7 +31,6 @@
     const redirect = (url='') => {
         if(url){ location.href= url; }
     }
-    let db_sign_out = inject('db_sign_out');
   </script>
   
   <template>

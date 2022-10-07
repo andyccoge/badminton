@@ -1,67 +1,31 @@
 <script setup>
-  import { ref, reactive, provide, readonly, computed, inject, onMounted } from 'vue';
-  import { useToast } from "vue-toastification";
+  import { ref, reactive, provide, readonly, computed, inject } from 'vue';
   import * as firebase from '../firebase.js';
+  import { useToast } from "vue-toastification";
+  import Modal from '../components/Modal.vue';
+  // import BodyBlock from '../components/BodyBlock.vue';
+  import ModalFirebase from '../components/ModalFirebase.vue';
+  import ModalUserEditor from '../components/ModalUserEditor.vue';
   import Nav from '../components/Nav.vue';
   import Leftmenu from '../components/Leftmenu.vue';
   import Bottommenu from '../components/Bottommenu.vue';
-  import Modal from '../components/Modal.vue';
-  import ModalUserEditor from '../components/ModalUserEditor.vue';
   import Court from '../components/Court.vue';
   import ContestRecord from '../components/ContestRecord.vue';
   const toast = useToast();
   const swal = inject('$swal');
+  // let body_block_show = ref(false);
 
-  // 資料庫初始化
-  const db_login_modal = reactive({
-    show: false, email: '', password:'',
-  })
-  const input_email = ref(null);
-  const sign_in = async() => {
-    try {
-      await firebase.db_sign_in(db_login_modal.email, db_login_modal.password);
-      toast.success('登入成功');
-      db_login_modal.show = false;
-    } catch (error) {
-      console.log(error.message);
-      swal({
-        title: '登入失敗',
-        icon: 'error',
-        showCancelButton: true,
-        confirmButtonText: '重新登入',
-        confirmButtonColor: '#3085d6',
-        cancelButtonText: '離開',
-        cancelButtonColor: '#d33',
-      }).then((result) => {
-        if(!result.isConfirmed){
-          location.href = '/index.html';
-        }
-      });
+  // 資料庫初始化-------------------------------------------------------------------------
+  const sign_in_success = async() => {
+    await get_play_users();
+
+    /*避免重整*/
+    window.onbeforeunload=function(e){
+      var e=window.event||e;
+      e.returnValue=("確定離開當前頁面嗎？");
     }
   }
-  const db_sign_out = () => {
-    firebase.db_sign_out();
-  }
-  provide('db_sign_out', db_sign_out);
-  onMounted (() => {
-    firebase.db_auth.onAuthStateChanged(async(user) => {
-      if (user) {
-        await get_play_users();
-        
-        /*避免重整*/
-        window.onbeforeunload=function(e){
-          var e=window.event||e;
-          e.returnValue=("確定離開當前頁面嗎？");
-        }
-      } else {
-        db_login_modal.show = true
-        setTimeout(()=>{ 
-            input_email.value.focus();
-            toast.info('請先登入系統');
-        }, 100);
-      }
-    });
-  })
+
   const get_play_users = async() => {
     let users_data = await firebase.get_db_data('users');
     users_data.forEach(data => {
@@ -348,15 +312,10 @@
   provide('court_next', court_next);
 
   // 新增/編輯人員-------------------------------------------------------------------------
-  let userModal = reactive({ 
-    show:false, index:-1, 
-    user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0}
-  });
+  const refModalUserEditor = ref(null);
   const userModal_open = (user_index=-1) => {
-    // menu_open_bottom.value = true;
-    userModal.show = true;
-    userModal.index = user_index;
-    if(user_index!=-1){ userModal.user = Object.assign({}, users[user_index]); }
+    let target_user = user_index!=-1 ? Object.assign({}, users[user_index]) : null;
+    refModalUserEditor.value.set_user(user_index, target_user);
   }
   const userModal_open_id = (user_id=-1) => {
     for (let index = 0; index < users.length; index++) {
@@ -366,20 +325,17 @@
       }
     }
   }
-  provide('userModal', userModal);
   provide('userModal_open', userModal_open);
   provide('userModal_open_id', userModal_open_id);
+
   const change_user_data = (user_index, user_data) => {
-    console.log(user_data);
-    console.log(userModal.index);
-    if(userModal.index==-1){
+    if(refModalUserEditor.value.userModal.index==-1){
       add_show_user(user_data);
     }else{
       let user_keys = Object.keys(user_data);
       user_keys.forEach(key => { users[user_index][key] = user_data[key] });
     }
   }
-  provide('change_user_data', change_user_data);
 
   // 下方人員面板-------------------------------------------------------------------------
   let menu_open_bottom = ref(false);
@@ -649,23 +605,9 @@
 </script>
 
 <template>
-  <!-- 登入授權資料庫 -->
-  <modal :show="db_login_modal.show" :click_bg_close="false" @close="">
-    <template #header>
-      <h3 class="font-bold text-xl">登入授權資料庫</h3>
-    </template>
-    <template #body>
-      信箱：<input type="email" class="form-input px-1 py-1 rounded w-full" ref="input_email" v-model="db_login_modal.email"/>
-      密碼：<input type="password" class="form-input px-1 py-1 rounded w-full" v-model="db_login_modal.password"/>
-    </template>
-    <template #footer>
-      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
-              @click="sign_in">
-        登入
-      </button>
-    </template>
-  </modal>
+  <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
+  <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
+
   <!-- 新增/編輯場地 -->
   <modal :show="courtModal.show" :click_bg_close="true" 
          @close="courtModal.show = false">
@@ -723,8 +665,6 @@
       </button>
     </template>
   </modal>
-
-  <ModalUserEditor></ModalUserEditor>
 
   <!-- 加入主頁面 -->
   <modal :show="modal_open_add_home!=null" :click_bg_close="true" @close="modal_open_add_home=null;">

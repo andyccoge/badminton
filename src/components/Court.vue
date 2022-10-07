@@ -1,71 +1,68 @@
 <script setup>
-    import { ref, inject, computed } from 'vue';
-    const props = defineProps({
-        court: Object,
-        court_index: Number,
-    });
-    const court_img = ref('/src/assets/img/badminton_court_e.png');
-    // const court_img = ref('/src/assets/img/badminton_court_v_e.png');
-    
-    const court_eidt = inject('court_eidt');
-    const court_delete = inject('court_delete');
-    const court_start = inject('court_start');
-    const court_stop = inject('court_stop');
-    const court_repeat = inject('court_repeat');
-    const court_next = inject('court_next'); 
-    
-    const chage_user = inject('chage_user');
-    const court_chage_user = inject('court_chage_user');
-    const toggle_menu_open_left_id = inject('toggle_menu_open_left_id');
-    const userModal_open_id = inject('userModal_open_id');
-    
-    const get_user_name = inject('get_user_name');
-    const court_delete_user = inject('court_delete_user');
+  import { ref, inject, computed } from 'vue';
+  const props = defineProps({
+    court: Object,
+    court_index: Number,
+  });
+  const court_img = ref('/src/assets/img/badminton_court_e.png');
+  // const court_img = ref('/src/assets/img/badminton_court_v_e.png');
+  
+  const court_eidt = inject('court_eidt');
+  const court_delete = inject('court_delete');
+  const court_start = inject('court_start');
+  const court_stop = inject('court_stop');
+  const court_repeat = inject('court_repeat');
+  const court_next = inject('court_next'); 
+  
+  const chage_user = inject('chage_user');
+  const court_chage_user = inject('court_chage_user');
+  const toggle_menu_open_left_id = inject('toggle_menu_open_left_id');
+  const userModal_open_id = inject('userModal_open_id');
+  
+  const get_user_name = inject('get_user_name');
+  const court_delete_user = inject('court_delete_user');
 
-    const game_time = computed(()=> {
-        if(props.court.time==0){ return '00：00'; }
-        else{
-            let minute = Math.floor((props.court.time / 60)).toFixed(0);
-            let second = (props.court.time % 60).toFixed(0);
-            return minute.padStart(2, 0) + '：' + second.padStart(2, 0);
+  const game_time = computed(()=> {
+      if(props.court.time==0){ return '00：00'; }
+      else{
+        let minute = Math.floor((props.court.time / 60)).toFixed(0);
+        let second = (props.court.time % 60).toFixed(0);
+        return minute.padStart(2, 0) + '：' + second.padStart(2, 0);
+      }
+  });
+
+  const check_on_court = inject('check_on_court');
+
+  const contest_record = inject('contest_record');
+  const repeat_player = computed(()=> {
+    let repeat = false;
+    let all_player = [];
+    for (let x = 0; x < props.court.users.length; x++) {
+      for (let y = 0; y < props.court.users[x].length; y++) {
+        const element = props.court.users[x][y];
+        if(element!=0){ all_player.push(element); }
+      }
+    }
+
+    for (let i = 0; i < contest_record.length; i++) {
+      let same_player = 0;
+      const record = contest_record[i];
+      for (let x = 0; x < record.users.length; x++) {
+        for (let y = 0; y < record.users[x].length; y++) {
+          const id = record.users[x][y];
+          if(all_player.indexOf(id)!=-1){
+            same_player += 1;
+          }
         }
-    });
-
-    const check_on_court = inject('check_on_court');
-
-    const contest_record = inject('contest_record');
-    const repeat_player = computed(()=> {
-        let repeat = false;
-        let all_player = [];
-        for (let x = 0; x < props.court.users.length; x++) {
-            for (let y = 0; y < props.court.users[x].length; y++) {
-                const element = props.court.users[x][y];
-                if(element!=0){ all_player.push(element); }
-            }
+        if(same_player / all_player.length >= 0.75){
+          repeat = true;
+          break;
         }
-
-        for (let i = 0; i < contest_record.length; i++) {
-            let same_player = 0;
-            const record = contest_record[i];
-            for (let x = 0; x < record.users.length; x++) {
-                for (let y = 0; y < record.users[x].length; y++) {
-                    const id = record.users[x][y];
-                    if(all_player.indexOf(id)!=-1){
-                        same_player += 1;
-                    }
-                }
-
-                if(same_player / all_player.length >= 0.75){
-                    repeat = true;
-                    break;
-                }
-            }
-
-            if(repeat){ break; }   
-        }
-        
-        return repeat;
-    });
+      }
+      if(repeat){ break; }   
+    }
+    return repeat;
+  });
 </script>
 
 <template>

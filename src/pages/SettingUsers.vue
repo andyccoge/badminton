@@ -1,60 +1,34 @@
 <script setup>
-  import BodyBlock from '../components/BodyBlock.vue';
-  import NavSetting from '../components/NavSetting.vue';
-  import Modal from '../components/Modal.vue';
-  import ModalUserEditor from '../components/ModalUserEditor.vue';
-  import { ref, reactive, provide, readonly, computed, inject, onMounted } from 'vue';
-  import { useToast } from "vue-toastification";
+  import { ref, reactive, inject } from 'vue';
   import * as firebase from '../firebase.js';
-  import { async } from '@firebase/util';
+  import { useToast } from "vue-toastification";
+  import BodyBlock from '../components/BodyBlock.vue';
+  import ModalFirebase from '../components/ModalFirebase.vue';
+  import ModalUserEditor from '../components/ModalUserEditor.vue';
+  import NavSetting from '../components/NavSetting.vue';
   const toast = useToast();
   const swal = inject('$swal');
   let body_block_show = ref(false);
 
   // 資料庫初始化-------------------------------------------------------------------------
-  const db_login_modal = reactive({
-      show: false, email: '', password:'',
-  })
-  const input_email = ref(null);
-  const sign_in = async() => {
-    body_block_show.value = true;
-    try {
-      await firebase.db_sign_in(db_login_modal.email, db_login_modal.password);
-      toast.success('登入成功');
-      db_login_modal.show = false;
-    } catch (error) {
-      console.log(error.message);
-      swal({
-        title: '登入失敗',
-        icon: 'error',
-        showCancelButton: true,
-        confirmButtonText: '重新登入',
-        confirmButtonColor: '#3085d6',
-        cancelButtonText: '離開',
-        cancelButtonColor: '#d33',
-      }).then((result) => {
-        if(!result.isConfirmed){
-          location.href = '/index.html';
-        }
-      });
-    }
-    body_block_show.value = false;
+  const sign_in_success = async() => {
+    await get_users();
+  } 
+
+  // 新增/編輯人員-------------------------------------------------------------------------
+  const refModalUserEditor = ref(null);
+  const userModal_open = (user_index=-1) => {
+    let target_user = user_index!=-1 ? Object.assign({}, users[user_index]) : null;
+    refModalUserEditor.value.set_user(user_index, target_user);
   }
-  const db_sign_out = () => {
-    firebase.db_sign_out();
-  }
-  firebase.db_auth.onAuthStateChanged(async(user) => {
-    if (user) {
-      get_users();
-    } else {
-      db_login_modal.show = true
-      setTimeout(()=>{ 
-        input_email.value.focus();
-        toast.info('請先登入系統');
-      }, 100);
+  const change_user_data = (user_index, user_data) => {
+    if(refModalUserEditor.value.userModal.index==-1){
+      users.push(user_data)
+    }else{
+      let user_keys = Object.keys(user_data);
+      user_keys.forEach(key => { users[user_index][key] = user_data[key] });
     }
-  });
-  provide('db_sign_out', db_sign_out);
+  }
 
   // 人員列表-------------------------------------------------------------------------
   let users = reactive([]);
@@ -115,58 +89,16 @@
       }
     });
   }
-
-  // 新增/編輯人員-------------------------------------------------------------------------
-  let userModal = reactive({ 
-    show:false, index:-1, 
-    user:{id:0, name:'', nick:'', gender:"", level:0, phone:'', email:'', played:0, wait:0, status:0}
-  });
-  const userModal_open = (user_index=-1) => {
-    // menu_open_bottom.value = true;
-    userModal.show = true;
-    userModal.index = user_index;
-    if(user_index!=-1){ userModal.user = Object.assign({}, users[user_index]); }
-  }
-  provide('userModal', userModal);
-  const change_user_data = (user_index, user_data) => {
-    console.log(user_data);
-    console.log(userModal.index);
-    if(userModal.index==-1){
-      users.push(user_data)
-    }else{
-      let user_keys = Object.keys(user_data);
-      user_keys.forEach(key => { users[user_index][key] = user_data[key] });
-    }
-  }
-  provide('change_user_data', change_user_data);
 </script>
 
 <template>
   <BodyBlock :show="body_block_show"></BodyBlock>
-  <!-- 登入授權資料庫 -->
-  <modal :show="db_login_modal.show" :click_bg_close="false" @close="">
-    <template #header>
-      <h3 class="font-bold text-xl">登入授權資料庫</h3>
-    </template>
-    <template #body>
-      信箱：<input type="email" class="form-input px-1 py-1 rounded w-full" ref="input_email" v-model="db_login_modal.email"/>
-      密碼：<input type="password" class="form-input px-1 py-1 rounded w-full" v-model="db_login_modal.password"/>
-    </template>
-    <template #footer>
-      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
-              @click="sign_in">
-          登入
-      </button>
-    </template>
-  </modal>
-
-  <ModalUserEditor></ModalUserEditor>
-
+  <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
+  <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
   <NavSetting></NavSetting>
 
   <div class="p-2">
-    <h1 class="text-xl font-bold">人員列表</h1>
+    <h1 class="text-xl font-bold" @click="gg">人員列表</h1>
     <h3 class="">批次新增人員(請輸入人名並以英文逗點分隔，人名間的空白及換行不會影響程式運作)</h3>
     <textarea class="w-full" rows="2" v-model="users_input_data" placeholder="陳XX, 王OO"></textarea>
     <p class="text-red-600">※此處新增不會檢查資料庫是否重複，因為姓名可重複</p>
