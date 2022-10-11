@@ -5,6 +5,7 @@
   import ModalFirebase from '../components/ModalFirebase.vue';
   import ModalUserEditor from '../components/ModalUserEditor.vue';
   import User from '../components/User.vue';
+  import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
 
@@ -13,8 +14,10 @@
   // 資料庫初始化-------------------------------------------------------------------------
   const refFirebase = ref(null);
   const sign_in_success = async() => {
+    refFirebase.value.set_body_block_show_long(true);
     await get_users();
     await get_game_date_users();
+    refFirebase.value.set_body_block_show_long(false);
   } 
 
   // 新增/編輯人員-------------------------------------------------------------------------
@@ -24,22 +27,26 @@
     refModalUserEditor.value.set_user(user_index, target_user);
   }
   const change_user_data = (user_index, user_data) => {
+    refFirebase.value.set_body_block_show_long(true);
     let user_keys = Object.keys(user_data);
     user_keys.forEach(key => { date_users[user_index][key] = user_data[key] });
     get_users();
+    refFirebase.value.set_body_block_show_long(false);
   }
 
   // 人員列表-------------------------------------------------------------------------
   let users = reactive([]);
   let date_users = reactive([]);
-  let select_repeat_user = reactive([]);
   let users_input_data = ref('');
   const add_users = async() => {
+    refFirebase.value.set_body_block_show_long(true);
     let data = users_input_data.value;
     data = data.split(',');
     data = data.filter((item)=>{ return item.trim() });
-    if(data.length==0){ toast.warning('請輸入員名稱');return; }
-    select_repeat_user.splice(0, select_repeat_user.length);
+    if(data.length==0){ 
+      refFirebase.value.set_body_block_show_long(false);
+      toast.warning('請輸入員名稱');return;
+    }
     for (let i = 0; i < data.length; i++) {
       let user_id = '';
       const d = data[i].trim();
@@ -56,21 +63,48 @@
           await refFirebase.value.add_game_date_users(game_date_id, user_id);
         }
         else{
-          select_repeat_user.push(repeat_users);
+          let button_html = '';
+          for (let x = 0; x < repeat_users.length; x++) {
+            const repeat = repeat_users[x];
+            const gender_class = repeat.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400';
+            button_html += '<button class="btn user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" val="'+ repeat.id +'">'+ 
+                              repeat.name + '('+ functions.stamp_to_time(repeat.create_time) +')\
+                            </button>';
+          }
+          await swal({
+            title: '有重複人員：' + d,
+            text: "無法判別人員，請透過單一設定選擇",
+            icon: 'warning',
+            html: button_html,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: '跳過',
+            didOpen: () => {
+              document.querySelectorAll('button.user').forEach(element => {
+                element.addEventListener('click', async(e) => {
+                  refFirebase.value.set_body_block_show_top(true);
+                  let id = element.getAttribute('val');
+                  await refFirebase.value.add_game_date_users(game_date_id, id);
+                  refFirebase.value.set_body_block_show_top(false);
+                  swal.close();
+                })
+              });
+            }
+          });
         }
       }
     }
-    users_input_data.value = '';
-
-    if(select_repeat_user.length>0){
-    }
-  
+    users_input_data.value = '';  
     await get_game_date_users();
+    refFirebase.value.set_body_block_show_long(false);
     toast.success('設定成功');
   }
+
   const select_user = async(user_index) =>{
+    refFirebase.value.set_body_block_show_long(true);
     await refFirebase.value.add_game_date_users(game_date_id, users[user_index].id);
     await get_game_date_users();
+    refFirebase.value.set_body_block_show_long(false);
     toast.success('設定成功');
   }
   provide('select_user', select_user);
@@ -93,7 +127,7 @@
       data = {...data, ...user, date_user_id: date_user_id};
       date_users.push(data);
     }
-    console.log(date_users)
+    // console.log(date_users);
   }
 
   const user_delete = (user_index) => {
@@ -138,16 +172,6 @@
         批次設定
     </button>
     <hr class="my-3">
-    <div>
-      <!-- <button class="flex items-center font-bold py-1 px-4 ml-2 border-b-4 rounded text-white
-                     bg-yellow-500 hover:bg-yellow-400 border-yellow-700 hover:border-yellow-500" 
-              @click="userModal_open(-1)">
-        <span class="mr-2">單一新增</span>
-        <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-        </svg>
-      </button> -->
-    </div>
     <table class="w-full flex flex-row flex-no-wrap sm:bg-white rounded-lg overflow-hidden sm:shadow-lg mb-5">
       <thead class="text-white">
         <tr v-for="(user, index) in date_users"
@@ -163,7 +187,7 @@
         </tr>
       </thead>
       <tbody class="flex-1 sm:flex-none">
-        <tr v-for="(user, index) in date_users"
+        <tr v-for="(user, index) in date_users" :class="[user.gender=='女' ?'bg-red-100' : 'bg-blue-100']"
           class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
           <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
           <td class="border-grey-light border p-2">

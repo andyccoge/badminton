@@ -119,7 +119,7 @@
         </tr>
       </thead>
       <tbody class="flex-1 sm:flex-none">
-        <tr v-for="(user, index) in users"
+        <tr v-for="(user, index) in users" :class="[user.gender=='女' ?'bg-red-100' : 'bg-blue-100']"
           class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
           <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
           <td class="border-grey-light border p-2">

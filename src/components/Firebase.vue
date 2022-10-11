@@ -7,53 +7,29 @@
   const toast = useToast();
   const swal = inject('$swal');
   let body_block_show = ref(false);
-
-  // const emit = defineEmits(['sign_in_success']);
-  const data_with_base_column = (table, data, type='add') => {
-    let empty_data = {};
-    if(table=='users'){
-      empty_data = {id:null, name:'', nick:null, gender:'', level:0, phone:null, email:null};
-    }
-    else if(table=='game_date_users'){
-      empty_data = {id:null, game_date_id:null, user_id:null, played:0, wait:0, status:0, paid:0};
-    }
-    else if(table=='game_date'){
-      empty_data = {id:null, date:null, location:null};
-    }
-    else if(table=='game_date_courts'){
-      empty_data = {id:null, game_date_id:null, name:null, type:0};
-    }
-    else if(table=='game_records'){
-      empty_data = {id:null, game_date_id:null, game_date_courts_id:null, users:[['',''],['','']], game_date_id:[0,0], time:0};
-    }
-
-    let keys = Object.keys(empty_data);
-    if(type=='add'){ /* 補欄位 */
-      keys.forEach(key => { 
-        if(typeof(data[key])=='undefined'){ data[key] = empty_data[key]; }
-      });
-    }
-    else{ /* 刪欄位 */
-      let clear_data = {};
-      keys.forEach(key => {
-        if(typeof(data[key])!='undefined'){ clear_data[key] = data[key]; }
-      });
-      delete clear_data.id;
-      data = clear_data;
-    }
-    return data;
+  let body_block_show_long = ref(false);
+  const set_body_block_show_long = (status) => {
+    body_block_show_long.value = status
   }
 
+  let body_block_show_top = ref(false);
+  let body_block_show_long_top = ref(false);
+  const set_body_block_show_top = (status) => {
+    body_block_show_top.value = status
+  }
+
+  // const emit = defineEmits(['sign_in_success']);
+
   const db_add_data =  async(table, data, repeat_cond=[]) => {
-    data = data_with_base_column(table, data);
     body_block_show.value = true;
     let repeat_data = [];
     if(repeat_cond.length>0){
-      // try{
+      try{
         repeat_data = await firebase.get_db_data(table, repeat_cond);
-      // } catch (error) {
-      //   repeat_data = null;
-      // }
+      } catch (error) {
+        console.log(error)
+        repeat_data = null;
+      }
     }
     if(repeat_data===null){
       toast.error("資料讀取(依篩選條件)發生問題");
@@ -97,7 +73,7 @@
     return ids;
   }
   const db_get_data = async(table, cond=[{orderBy:["create_time", "desc"]}]) => {
-    // body_block_show.value = true;
+    body_block_show.value = true;
     let data = [];
     try {
       data = await firebase.get_db_data(table, cond);
@@ -105,12 +81,11 @@
       toast.error("資料讀取發生問題");
     }
     // console.log(data)
-    // body_block_show.value = false;
+    body_block_show.value = false;
     return data;
   }
   const db_update_data = async(table, id, data) => {
     let result = true;
-    data = data_with_base_column(table, data, 'minus');
     body_block_show.value = true;
     try {
       await firebase.update_data(table, id, data);
@@ -150,6 +125,9 @@
           
 
   defineExpose({
+    set_body_block_show_long, /* 控制跨操作顯示黑屏 */
+    set_body_block_show_top, /* 控制跨操作顯示黑屏(絕對頂) */
+    
     db_add_data, /* 添加一筆資料(可檢查重複) */
     db_set_data, /* 批次添加資料(不檢查重複) */
     db_get_data, /* 依條件取得資料 */
@@ -161,7 +139,6 @@
 </script>
 
 <template>
-  <BodyBlock :show="body_block_show"></BodyBlock>
+  <BodyBlock :show="body_block_show || body_block_show_long"></BodyBlock>
+  <BodyBlock :show="body_block_show_top || body_block_show_long_top" :zindex="99999"></BodyBlock>
 </template>
-
-<style scoped></style>

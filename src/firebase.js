@@ -42,7 +42,43 @@ export async function get_db_data(table, cond=[{orderBy:["create_time", "desc"]}
   return dataList;
 }
 
+const data_with_base_column = (table, data, type='add') => {
+  let empty_data = {};
+  if(table=='users'){
+    empty_data = {id:null, name:'', nick:null, gender:'', level:0, phone:null, email:null};
+  }
+  else if(table=='game_date_users'){
+    empty_data = {id:null, game_date_id:null, user_id:null, played:0, wait:0, status:0, paid:0};
+  }
+  else if(table=='game_date'){
+    empty_data = {id:null, date:null, location:null};
+  }
+  else if(table=='game_date_courts'){
+    empty_data = {id:null, game_date_id:null, name:null, type:0};
+  }
+  else if(table=='game_records'){
+    empty_data = {id:null, game_date_id:null, game_date_courts_id:null, users:[['',''],['','']], game_date_id:[0,0], time:0};
+  }
+
+  let keys = Object.keys(empty_data);
+  if(type=='add'){ /* 補欄位 */
+    keys.forEach(key => { 
+      if(typeof(data[key])=='undefined'){ data[key] = empty_data[key]; }
+    });
+  }
+  else{ /* 刪欄位 */
+    let clear_data = {};
+    keys.forEach(key => {
+      if(typeof(data[key])!='undefined'){ clear_data[key] = data[key]; }
+    });
+    delete clear_data.id;
+    data = clear_data;
+  }
+  return data;
+}
+
 export async function add_data(table, data) {
+  data = data_with_base_column(table, data);
   data['create_time'] = Date.now();
   let docRef = await addDoc(collection(firebase_db, table), data);
   let docRef_new = doc(firebase_db, table, docRef.id);
@@ -61,6 +97,7 @@ export async function set_data(table, data) {
 }
 
 export async function update_data(table, id, data) {
+  data = data_with_base_column(table, data, 'minus');
   const docRef = doc(firebase_db, table, id);
   await updateDoc(docRef, data);
 }
