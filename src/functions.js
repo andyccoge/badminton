@@ -47,8 +47,9 @@ export function copy_text(text){
   document.body.removeChild(textArea);
 }
 
-export function window_open(url){
-  if(url){
-    window.open(url);
-  }
+export function window_open(url=''){
+  if(url){ window.open(url); }
+}
+export function redirect(url=''){
+  if(url){ location.href= url; }
 }

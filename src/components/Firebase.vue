@@ -54,8 +54,12 @@
           }
         });
       }else{
-        let data_id = await firebase.add_data(table, data);
-        data.id = data_id;
+        try {
+          let data_id = await firebase.add_data(table, data);
+          data.id = data_id;
+        } catch (error) {
+          console.log(error);
+        }
       }
     }
     body_block_show.value = false;
