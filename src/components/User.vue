@@ -6,16 +6,16 @@
     user_index: Number,
   });
   const toggle_menu_open_left = inject('toggle_menu_open_left');
-  const alert_wait = inject('alert_wait');
+  const alert_wait = inject('alert_wait') ? inject('alert_wait') : 999;
 
   const show_name = computed(()=> { return props.user.nick ? props.user.nick : props.user.name});
 
-  const select_user = inject('select_user');
-  const check_on_court = inject('check_on_court');
-  const grouping_users_mode = inject('grouping_users_mode');
-  const team_select_uesr_ids = inject('team_select_uesr_ids');
+  const select_user = inject('select_user') ? inject('select_user') : (user_index)=>{return user_index;};
+  const check_on_court = inject('check_on_court') ? inject('check_on_court') : ()=>{return false;};
+  const grouping_users_mode = inject('grouping_users_mode') ? inject('grouping_users_mode') : false;
+  const team_select_uesr_ids = inject('team_select_uesr_ids') ? inject('team_select_uesr_ids') : [];
 
-  const bottom_nav_more = inject('bottom_nav_more');
+  const bottom_nav_more = inject('bottom_nav_more') ? inject('bottom_nav_more') : false;
 </script>
 
 <template>
@@ -37,7 +37,7 @@
         <span class="" @click="select_user(user_index)" v-if="!grouping_users_mode && bottom_nav_more">
           完賽：<span v-text="user.played"></span>
         </span>
-        <button class="ml-2" @click="toggle_menu_open_left(user_index)">
+        <button class="ml-2" @click="toggle_menu_open_left(user_index)" v-if="toggle_menu_open_left">
           <svg class="h-5 w-5 text-black"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>

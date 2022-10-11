@@ -1,12 +1,12 @@
 <script setup>
   import { ref, reactive, inject } from 'vue';
-  import * as firebase from '../firebase.js';
   import { useToast } from "vue-toastification";
+  import Firebase from '../components/Firebase.vue';
   import Modal from '../components/Modal.vue';
-  import BodyBlock from '../components/BodyBlock.vue';
   const toast = useToast();
   const swal = inject('$swal');
-  let body_block_show = ref(false);
+
+  const refFirebase = ref(null);
 
   let userModal  = reactive({ 
     show:false, index:-1, 
@@ -37,35 +37,14 @@
     if(!userModal.user.name){ toast.warning("請輸入姓名");return; }
     userModal_keys.forEach(key => { target_user[key] = userModal.user[key] });
 
-    body_block_show.value = true;
     if(userModal.index==-1){
-      let repeat_user = await firebase.get_db_data('users', [['name', '==', target_user.name]]);
-      if(repeat_user.length>0){
-        await swal({
-          title: '發現重複資料，確定新增？',
-          text: "",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: '確定',
-          confirmButtonColor: '#3085d6',
-          cancelButtonText: '取消',
-          cancelButtonColor: '#d33',
-        }).then(async(result) => {
-          if (result.isConfirmed) {
-            let target_user_id = await firebase.add_data('users', target_user);
-            target_user.id = target_user_id;
-          }else{
-            target_user = null;
-          }
-        });
-      }else{
-        let target_user_id = await firebase.add_data('users', target_user);
-        target_user.id = target_user_id;
-      }
+      target_user = await refFirebase.value.db_add_data('users', target_user, [
+        ['name', '==', target_user.name]
+      ]);
     }else{
-      await firebase.update_data('users', target_user.id, target_user);
+      let result = await refFirebase.value.db_update_data('users', target_user.id, target_user);
+      if(!result){ return; }
     }
-    body_block_show.value = false;
 
     if(target_user){
       toast.success("資料已儲存");
@@ -83,7 +62,7 @@
 </script>
 
 <template>
-  <BodyBlock :show="body_block_show"></BodyBlock>
+  <Firebase ref="refFirebase"></Firebase>
 
   <!-- 新增/編輯人員 -->
   <modal :show="userModal.show" @close="userModal.show = false;">

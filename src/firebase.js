@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { 
     getFirestore, collection, getDocs, 
     doc, addDoc, updateDoc, writeBatch,
-    query, where, orderBy, 
+    query, where, orderBy, limit,
     deleteDoc,
 } from 'firebase/firestore/lite';
 
@@ -21,16 +21,24 @@ export function db_sign_out(redirect_url=''){
   location.href = redirect_url ? redirect_url : "/";
 }
 
-export async function get_db_data(table, cond=[]) {
-  let sql_query = [orderBy("create_time", "desc")];
+export async function get_db_data(table, cond=[{orderBy:["create_time", "desc"]}]) {
+  let sql_query = [];
   cond.forEach(element => {
-    console.log(...element);
-    sql_query.push( where(...element) );
+    if(typeof(element['orderBy'])!='undefined'){
+      sql_query.unshift( orderBy(...element['orderBy']) );
+    }else{
+      sql_query.unshift( where(...element) );
+    }
     /* https://firebase.google.com/docs/firestore/query-data/queries?hl=zh-cn */
   });
   const q = query(collection(firebase_db, table), ...sql_query);
-  const docs_obj = await getDocs(q);
-  const dataList = docs_obj.docs.map(doc => doc.data());
+  let dataList = null;
+  // console.log(sql_query)
+  try {
+    const docs_obj = await getDocs(q);
+    dataList = docs_obj.docs.map(doc => doc.data());
+  } catch (error) {
+  }
   return dataList;
 }
 
