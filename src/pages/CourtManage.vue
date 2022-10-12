@@ -155,7 +155,7 @@
       confirmButtonColor: '#3085d6',
       cancelButtonText: '取消',
       cancelButtonColor: '#d33',
-    }).then((result) => {
+    }).then(async(result) => {
       if (result.isConfirmed) {
         let court = courts[court_index];
         courts.splice(court_index, 1);
@@ -164,6 +164,7 @@
             user_set_status(user_id, 0, 'user_id');
           })
         });
+        await refFirebase.value.db_delete_data('game_date_courts', court.id);
       }
     });
   }
@@ -346,9 +347,10 @@
     return court_is_empty;
   }
   const copy_court = (target_court) => {
-    let copy = {};
-    court_empty_keys.forEach(key => { copy[key] = target_court[key] });
-    target_court.users.forEach((group, group_index)=>{ copy.users[group_index] = [...group] });
+    // let copy = {};
+    // court_empty_keys.forEach(key => { copy[key] = target_court[key] });
+    // target_court.users.forEach((group, group_index)=>{ copy.users[group_index] = [...group] });
+    let copy = JSON.parse(JSON.stringify(target_court));
     return copy;
   }
   const court_reset = (court_index, reset_user=false) => {

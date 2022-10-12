@@ -15,7 +15,7 @@
 
   const court_name = ref(null);
   let courts = inject('courts');
-  const courtModal_empty = {game_date_id:null, id:null, name: '', type:0}
+  const courtModal_empty = {name: '', type:0}
   let courtModal_empty_keys = Object.keys(courtModal_empty);
   let courtModal = reactive({
     show: false, index: -1, ...courtModal_empty
@@ -40,19 +40,14 @@
   }
 
   const add_court = async() => {
-    let target = {};
+    let target = JSON.parse(JSON.stringify(courtModal));
     if(!courtModal.name){ toast.warning("請輸入場地名稱");return; }
   
     if(courtModal.index==-1){
-      courtModal_empty_keys.forEach(key => { target[key] = courtModal_empty[key] });
-      target.name = courtModal.name;
-      target.type = courtModal.type;
       target.game_date_id = game_date_id.value;
-      let add_result = await refFirebase.value.db_add_data('game_date_courts', target);
-      target.id = add_result.id;
+      target = await refFirebase.value.db_add_data('game_date_courts', target);
     }else{
-      courtModal_empty_keys.forEach(key => { target[key] = courtModal[key] });
-      await refFirebase.value.db_update_data('game_date_courts', target.id, target);
+      await refFirebase.value.db_update_data('game_date_courts', courts[courtModal.index].id, target);
     }
     courtModal.show = false;
 
