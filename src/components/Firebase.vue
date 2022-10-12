@@ -4,9 +4,9 @@
   import { useToast } from "vue-toastification";
   import Modal from '../components/Modal.vue';
   import BodyBlock from '../components/BodyBlock.vue';
-import { orderBy } from 'firebase/firestore/lite';
   const toast = useToast();
   const swal = inject('$swal');
+
   let body_block_show = ref(false);
   let body_block_show_long = ref(false);
   const set_body_block_show_long = (status) => {
@@ -72,17 +72,19 @@ import { orderBy } from 'firebase/firestore/lite';
     try {
       ids = await firebase.set_data(table, data);
     } catch (error) {
+      console.log(error);
       toast.error("資料批次寫入發生問題");
     }
     body_block_show.value = false;
     return ids;
   }
-  const db_get_data = async(table, cond=[{orderBy:["create_time", "desc"]}]) => {
+  const db_get_data = async(table, cond=[{'orderBy':["create_time", "desc"]}]) => {
     body_block_show.value = true;
     let data = [];
     try {
       data = await firebase.get_db_data(table, cond);
     } catch (error) {
+      console.log(error);
       toast.error("資料讀取發生問題");
     }
     // console.log(data)
@@ -95,6 +97,7 @@ import { orderBy } from 'firebase/firestore/lite';
     try {
       await firebase.update_data(table, id, data);
     } catch (error) {
+      console.log(error);
       toast.error("資料儲存發生問題");
       result = false;
     }
@@ -107,6 +110,7 @@ import { orderBy } from 'firebase/firestore/lite';
     try {
       await firebase.delete_data(table, id);
     } catch (error) {
+      console.log(error);
       toast.error("資料刪除發生問題");
       result = false;
     }
@@ -128,7 +132,7 @@ import { orderBy } from 'firebase/firestore/lite';
     }
   }
   const get_game_date_users = async(game_date_id) => {
-    let user_data = await db_get_data('game_date_users', [['game_date_id','==', game_date_id], {orderBy:['create_time', 'asc']}]);
+    let user_data = await db_get_data('game_date_users', [['game_date_id','==', game_date_id], {'orderBy':['create_time', 'asc']}]);
     for (let i = 0; i < user_data.length; i++) {
       let data = user_data[i];
       let user = await db_get_data('users', [['id','==', data.user_id]]);

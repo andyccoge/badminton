@@ -68,4 +68,10 @@
   html, body {
     height: 100%;
   }
+
+  @media (max-width: 479px) {
+    table{
+      max-width: calc(100vw - 72px);
+    }
+  }
 </style>

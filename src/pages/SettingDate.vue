@@ -34,7 +34,7 @@
   let dates = reactive([]);
   const get_dates = async() => {
     dates.splice(0, dates.length);
-    let data_pool = await refFirebase.value.db_get_data('game_date', [{orderBy:['date', 'desc']}]);
+    let data_pool = await refFirebase.value.db_get_data('game_date', [{'orderBy':['date', 'desc']}]);
     data_pool.forEach(data => {
       dates.push(data);
     });

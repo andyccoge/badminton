@@ -28,18 +28,18 @@
     courtModal.type = courts[court_index].type;
     setTimeout(()=>{ court_name.value.focus() }, 100);
   }
-  const courtModal_add = (court_type) => {
+  const courtModal_add = async(court_type) => {
     reset_courtModal(court_type); 
     if(court_type==0){ /* 預備場地 */
       courtModal.name = '預備';
-      add_court();
+      await add_court();
     }else{ /* 正式場地 */
       courtModal.show = true;
       setTimeout(()=>{ court_name.value.focus() }, 100);
     }
   }
 
-  const add_court = () => {
+  const add_court = async() => {
     let target = {};
     if(!courtModal.name){ toast.warning("請輸入場地名稱");return; }
   
@@ -47,11 +47,15 @@
       courtModal_empty_keys.forEach(key => { target[key] = courtModal_empty[key] });
       target.name = courtModal.name;
       target.type = courtModal.type;
+      target.game_date_id = game_date_id.value;
+      let add_result = await refFirebase.value.db_add_data('game_date_courts', target);
+      target.id = add_result.id;
     }else{
       courtModal_empty_keys.forEach(key => { target[key] = courtModal[key] });
+      await refFirebase.value.db_update_data('game_date_courts', target.id, target);
     }
     courtModal.show = false;
-    
+
     if(target){
       toast.success("資料已儲存");
       emit('change_court_data', courtModal.index, target);
@@ -87,7 +91,7 @@
     </template>
     <template #footer>
       <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="[courtModal.type==1 ? 'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500' :
+              :class="[courtModal.type==1 ? 'bg-green-500 hover:bg-green-400 text-white border-green-700 hover:border-green-500' :
                                             'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'
                       ]"
               @click="add_court">

@@ -69,10 +69,18 @@
 
     /*取得比賽資料*/
     contest_record.splice(0, contest_record.length);
-    let contest_record_data = await refFirebase.value.db_get_data('game_records', [['game_date_id', '==', game_date_id.value], {orderBy:['create_time', 'desc']}]);
+    let contest_record_data = await refFirebase.value.db_get_data('game_records', [['game_date_id', '==', game_date_id.value], {'orderBy':['create_time', 'desc']}]);
     for (let x = 0; x < contest_record_data.length; x++) {
       contest_record.push(contest_record_data[x]);
     }
+    
+    /* 取得場地資料 */
+    courts.splice(0, courts.length);
+    let courts_data = await refFirebase.value.db_get_data('game_date_courts', [['game_date_id', '==', game_date_id.value], {'orderBy':['create_time', 'asc']}]);
+    for (let x = 0; x < courts_data.length; x++) {
+      courts.push(courts_data[x]);
+    }
+    refBottommenu.value.init_alert_wait();
 
     /*避免重整*/
     window.onbeforeunload=function(e){
@@ -100,16 +108,8 @@
   const court_empty = {game_date_id:null, id:null, name: '', type:0, users:court_empty_user(), time:0, timer:null, game_points:[0,0]};
   let court_empty_keys = Object.keys(court_empty);
   
-  let courts = reactive([
-    {game_date_id:null, id:0, name:'場地一', type:1, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:1, name:'場地二', type:1, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:2, name:'場地三', type:1, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:3, name:'場地四', type:1, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:4, name:'預備1', type:0, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:5, name:'預備2', type:0, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:6, name:'預備3', type:0, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-    {game_date_id:null, id:7, name:'預備4', type:0, users:[['',''],['','']], time:0, timer:null, game_points:[0,0]},
-  ]);  
+  let courts = reactive([]);
+  const courts_pre = computed(()=> { return courts.filter(court => court.type==0)});
   provide('courts', readonly(courts));
   const refCourtEditor = ref(null);
   const court_eidt = (court_index) => {
@@ -143,7 +143,6 @@
   const courtModal_add = (num) => {
     refCourtEditor.value.courtModal_add(num);
   }
-
 
   const court_delete = (court_index) => {
     if (court_index < 0 && court_index > courts.length) { return; }
@@ -234,6 +233,7 @@
 
   const court_complete = async() =>{
     let contest_data = copy_court(courts[pointModal.finish_index]);
+    console.log(contest_data)
     contest_record.unshift(contest_data);
 
     await refFirebase.value.db_add_data('game_records', {...contest_data, game_date_id:game_date_id.value});
@@ -388,6 +388,7 @@
   }
 
   // 下方人員面板-------------------------------------------------------------------------
+  let refBottommenu = ref(null);
   let menu_open_bottom = ref(false);
   provide('menu_open_bottom', menu_open_bottom);
   let bottom_nav_more = ref(true);
@@ -739,7 +740,7 @@
     <hr class="">
 
     <div class="bg-yellow-200 pt-1 pb-6 relative">
-      <span class="absolute pl-3 pt-3 animate-bounce">
+      <span class="absolute pl-3 pt-3 animate-bounce" v-if="courts_pre.length>0">
         <svg class="h-8 w-8 text-yellow-400"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  <line x1="12" y1="5" x2="12" y2="19" />  <polyline points="19 12 12 19 5 12" /></svg>
       </span>
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
@@ -760,7 +761,7 @@
     </div>
   </main>
 
-  <Bottommenu></Bottommenu>
+  <Bottommenu ref="refBottommenu"></Bottommenu>
 </template>
 
 <style scoped>

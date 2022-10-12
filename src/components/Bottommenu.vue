@@ -23,8 +23,10 @@
       bottom_nav_more.value = bottom_nav_more.value ? false : true;
   }
 
-  const init_alert_wait = courts.filter(court => court.type==1).length;
-  let alert_wait = ref(init_alert_wait);
+  let alert_wait = ref(99);
+  const init_alert_wait = () => {
+    alert_wait.value= courts.filter(court => court.type==1).length;
+  }
   provide('alert_wait', readonly(alert_wait));
 
   const grouping_users_mode = inject('grouping_users_mode');
@@ -32,13 +34,17 @@
   const grouping_users = inject('grouping_users');
   
   let userModal_open = inject('userModal_open');
+
+  defineExpose({
+    init_alert_wait, /* 初始化等候提醒數 */
+  })
 </script>
 
 <template>
   <div class="bottom_nav_leave_blank pt-12"></div>
   <nav>
     <div class="btn absolute w-full">
-      <div class="container mx-auto">
+      <div class="container mx-auto px-1">
         <button class="w-full font-bold py-2 px-4 border-b-4 rounded-t-lg text-white relative"
                 :class="[grouping_users_mode ? 'bg-black hover:bg-black  border-black hover:border-black' : 'bg-red-500 hover:bg-red-400  border-red-700']"
                 @click.self="toggle_menu_open">
