@@ -108,11 +108,11 @@
       <thead class="text-white">
         <tr v-for="(user, index) in users"
             class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
-          <th class="border-grey-light border p-2 sm:border-0" style="width: 100px;">序號</th>
+          <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>
           <th class="border-grey-light border p-2 sm:border-0">姓名</th>
           <th class="border-grey-light border p-2 sm:border-0">暱稱</th>
           <th class="border-grey-light border p-2 sm:border-0">性別</th>
-          <th class="border-grey-light border p-2 sm:border-0">等級</th>
+          <th class="border-grey-light border p-2 sm:border-0 text-right">等級</th>
           <th class="border-grey-light border p-2 sm:border-0">信箱</th>
           <th class="border-grey-light border p-2 sm:border-0">電話</th>
           <th class="border-grey-light border p-2 sm:border-0">操作</th>
@@ -158,24 +158,9 @@
 </template>
 
 <style scoped>
+  @import url("../assets/table.css");
+  
   textarea{
     min-height: 2.5rem;
-  }
-
-  td{
-    min-height: 42px;
-  }
-  @media (min-width: 480px) {
-    table {
-      display: inline-table !important;
-    }
-
-    thead tr:not(:first-child) {
-      display: none;
-    }
-
-    td{
-      min-height: unset;
-    }
   }
 </style>

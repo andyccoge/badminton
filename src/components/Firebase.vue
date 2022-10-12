@@ -4,6 +4,7 @@
   import { useToast } from "vue-toastification";
   import Modal from '../components/Modal.vue';
   import BodyBlock from '../components/BodyBlock.vue';
+import { orderBy } from 'firebase/firestore/lite';
   const toast = useToast();
   const swal = inject('$swal');
   let body_block_show = ref(false);
@@ -126,6 +127,17 @@
       ]);
     }
   }
+  const get_game_date_users = async(game_date_id) => {
+    let user_data = await db_get_data('game_date_users', [['game_date_id','==', game_date_id], {orderBy:['create_time', 'asc']}]);
+    for (let i = 0; i < user_data.length; i++) {
+      let data = user_data[i];
+      let user = await db_get_data('users', [['id','==', data.user_id]]);
+      user = user.length>0 ? user[0] : {};
+      let date_user_id = data.id;
+      user_data[i] = {...data, ...user, date_user_id: date_user_id};
+    }
+    return user_data;
+  }
           
 
   defineExpose({
@@ -139,6 +151,7 @@
     db_delete_data, /* 刪除資料 */
 
     add_game_date_users, /* 添加add_game_date_users */
+    get_game_date_users, /* 依date_id取得人員資料 */
   })
 </script>
 

@@ -124,7 +124,7 @@
   }
   .v-enter-active,
   .v-leave-active{
-    transition-duration: 0.5s;
+    transition-duration: 0.1s;
     height: 50vh;
   }
 

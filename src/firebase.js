@@ -42,7 +42,7 @@ export async function get_db_data(table, cond=[{orderBy:["create_time", "desc"]}
 
   dataList.forEach((element, index) => {
     if(typeof(element['users'])!='undefined'){
-      dataList[index]['users'] = Object.values(element['users']);
+      dataList[index]['users'] = JSON.parse(element['users']);
     }
   });
   return dataList;
@@ -60,12 +60,12 @@ const data_with_base_column = (table, data, type='add') => {
     empty_data = {id:null, date:null, location:null};
   }
   else if(table=='game_date_courts'){
-    if(typeof(data['users'])!='undefined'){ data['users'] = Object.assign({}, data['users']); }
-    empty_data = {id:null, game_date_id:null, name:null, type:0, users:{0:['',''], 1:['','']}};
+    if(typeof(data['users'])!='undefined'){ data['users'] = JSON.stringify(data['users']); }
+    empty_data = {id:null, game_date_id:null, name:null, type:0, users:"{['',''], ['','']}"};
   }
   else if(table=='game_records'){
-    if(typeof(data['users'])!='undefined'){ data['users'] = Object.assign({}, data['users']); }
-    empty_data = {id:null, game_date_id:null, users:{0:['',''], 1:['','']}, time:0, game_points:[0,0], game_date_courts_id:null};
+    if(typeof(data['users'])!='undefined'){ data['users'] = JSON.stringify(data['users']); }
+    empty_data = {id:null, game_date_id:null, users:"{['',''], ['','']}", time:0, game_points:[0,0]};
   }
 
   let keys = Object.keys(empty_data);

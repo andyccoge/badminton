@@ -60,7 +60,7 @@
           }else if(repeat_users.length==1){
             user_id = repeat_users[0].id;
           }
-          await refFirebase.value.add_game_date_users(game_date_id, user_id);
+          await refFirebase.value.add_game_date_users(game_date_id.value, user_id);
         }
         else{
           let button_html = '';
@@ -85,7 +85,7 @@
                 element.addEventListener('click', async(e) => {
                   refFirebase.value.set_body_block_show_top(true);
                   let id = element.getAttribute('val');
-                  await refFirebase.value.add_game_date_users(game_date_id, id);
+                  await refFirebase.value.add_game_date_users(game_date_id.value, id);
                   refFirebase.value.set_body_block_show_top(false);
                   swal.close();
                 })
@@ -103,7 +103,7 @@
 
   const select_user = async(user_index) =>{
     refFirebase.value.set_body_block_show_long(true);
-    await refFirebase.value.add_game_date_users(game_date_id, users[user_index].id);
+    await refFirebase.value.add_game_date_users(game_date_id.value, users[user_index].id);
     await get_game_date_users();
     refFirebase.value.set_body_block_show_long(false);
     toast.success('設定成功');
@@ -119,14 +119,9 @@
   }
   const get_game_date_users = async() => {
     date_users.splice(0, date_users.length);
-    let user_data = await refFirebase.value.db_get_data('game_date_users', [['game_date_id','==', game_date_id]]);
+    let user_data = await refFirebase.value.get_game_date_users(game_date_id.value);
     for (let i = 0; i < user_data.length; i++) {
-      let data = user_data[i];
-      let user = await refFirebase.value.db_get_data('users', [['id','==', data.user_id]]);
-      user = user.length>0 ? user[0] : {};
-      let date_user_id = data.id;
-      data = {...data, ...user, date_user_id: date_user_id};
-      date_users.push(data);
+      date_users.push(user_data[i]);
     }
     // console.log(date_users);
   }
@@ -177,11 +172,11 @@
       <thead class="text-white">
         <tr v-for="(user, index) in date_users"
             class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
-          <th class="border-grey-light border p-2 sm:border-0" style="width: 100px;">序號</th>
+          <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>
           <th class="border-grey-light border p-2 sm:border-0">姓名</th>
           <th class="border-grey-light border p-2 sm:border-0">暱稱</th>
           <th class="border-grey-light border p-2 sm:border-0">性別</th>
-          <th class="border-grey-light border p-2 sm:border-0">等級</th>
+          <th class="border-grey-light border p-2 sm:border-0 text-right">等級</th>
           <th class="border-grey-light border p-2 sm:border-0">信箱</th>
           <th class="border-grey-light border p-2 sm:border-0">電話</th>
           <th class="border-grey-light border p-2 sm:border-0">操作</th>
@@ -220,24 +215,9 @@
 </template>
 
 <style scoped>
+  @import url("../assets/table.css");
+  
   textarea{
     min-height: 2.5rem;
-  }
-
-  td{
-    min-height: 42px;
-  }
-  @media (min-width: 480px) {
-    table {
-      display: inline-table !important;
-    }
-
-    thead tr:not(:first-child) {
-      display: none;
-    }
-
-    td{
-      min-height: unset;
-    }
   }
 </style>

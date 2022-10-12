@@ -53,3 +53,29 @@ export function window_open(url=''){
 export function redirect(url=''){
   if(url){ location.href= url; }
 }
+
+export function get_href_attr(attr=''){
+  if(attr==''){ return attr; }
+  var Request = new Object();	 
+  Request = GetRequest();
+
+  function GetRequest() {		 
+    var url = location.search; 
+    var theRequest = new Object();		 
+    if (url.indexOf("?") != -1) {		 
+      var str = url.substr(1);		 
+      let strs = str.split("&");		 
+      for(var i = 0; i < strs.length; i++) {		 
+        theRequest[strs[i].split("=")[0]]=decodeURI(strs[i].split("=")[1]);		 
+      }		 
+    }		 
+    return theRequest;		 
+  }
+
+  if(typeof(Request[attr])!='undefined'){
+    attr = Request[attr];
+  }else{
+    attr = '';
+  }
+  return attr;
+}

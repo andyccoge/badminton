@@ -139,29 +139,14 @@
 </template>
 
 <style scoped>
-  td{
-    min-height: 42px;
-  }
+  @import url("../assets/table.css");
+
   .w_250px{
     width: auto;
   }
   @media (min-width: 480px) {
-    table {
-      display: inline-table !important;
-    }
-    th{
-      min-width: 100px;
-    }
     .w_250px{
       width: 250px;
-    }
-
-    thead tr:not(:first-child) {
-      display: none;
-    }
-
-    td{
-      min-height: unset;
     }
   }
 </style>

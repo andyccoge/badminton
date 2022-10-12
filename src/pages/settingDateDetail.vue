@@ -10,7 +10,7 @@
   const toast = useToast();
   const swal = inject('$swal');
 
-  const game_date_id = location.href.split('?date=').pop().split('#')[0];
+  const game_date_id = ref(functions.get_href_attr('date'));
   provide('game_date_id', game_date_id);
 
   // 資料庫初始化-------------------------------------------------------------------------
@@ -35,7 +35,7 @@
   const get_dates = async() => {
     dates.splice(0, dates.length);
     let data_pool = await refFirebase.value.db_get_data('game_date', [
-      ['id', '==', game_date_id]
+      ['id', '==', game_date_id.value]
     ]);
     if(data_pool.length==0){
       swal({
@@ -130,29 +130,17 @@
 </template>
 
 <style scoped>
-  td{
-    min-height: 42px;
-  }
+  @import url("../assets/table.css");
+
   .w_250px{
     width: auto;
   }
   @media (min-width: 480px) {
-    table {
-      display: inline-table !important;
-    }
     th{
       min-width: 100px;
     }
     .w_250px{
       width: 250px;
-    }
-
-    thead tr:not(:first-child) {
-      display: none;
-    }
-
-    td{
-      min-height: unset;
     }
   }
 </style>

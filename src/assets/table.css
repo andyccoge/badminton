@@ -1,0 +1,43 @@
+
+th{
+  min-width: 60px;
+}
+td{
+  min-height: 42px;
+  text-align: center;
+}
+td.text-right{
+  text-align: right;
+}
+
+@media (max-width: 479px) {
+  table{
+    overflow-x: scroll;
+  }
+  tr{
+    min-width: 100%;
+    width: max-content;
+  }
+  table th{
+    text-align: center !important;
+  }
+  td{
+    text-align: left;
+  }
+  td.text-right{
+    text-align: right;
+  }
+}
+@media (min-width: 480px) {
+  table {
+    display: inline-table !important;
+  }
+
+  thead tr:not(:first-child) {
+    display: none;
+  }
+
+  td{
+    min-height: unset;
+  }
+}

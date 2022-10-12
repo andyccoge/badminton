@@ -10,18 +10,7 @@
   const refFirebase = ref(null);
 
   const game_date_id = inject('game_date_id');
-  if(!game_date_id){
-    swal({
-      title: '無打球日ID',
-      text: "",
-      icon: 'warning',
-      showConfirmButton: false,
-      showCancelButton: true,
-      cancelButtonText: '離開',
-    }).then(()=>{
-      location.href = '/';
-    })
-  }
+
   const emit = defineEmits(['change_court_data']);
 
   const court_name = ref(null);

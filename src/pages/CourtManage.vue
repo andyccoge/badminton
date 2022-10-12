@@ -11,22 +11,68 @@
   import Court from '../components/Court.vue';
   import CourtEditor from '../components/CourtEditor.vue';
   import ContestRecord from '../components/ContestRecord.vue';
+  import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
 
-  const game_date_id = location.href.split('?date=').pop().split('#')[0];
+  let game_date_id = ref(functions.get_href_attr('date'));
+  game_date_id.value = game_date_id.value ? game_date_id.value : "";
   provide('game_date_id', game_date_id);
+  let game_date_data = ref({});
 
   // 資料庫初始化-------------------------------------------------------------------------
   const refFirebase = ref(null);
   const sign_in_success = async() => {
     refFirebase.value.set_body_block_show_long(true);
+
+    /*取得打球日資料*/
+    if(game_date_id.value==''){
+      const game_date = await refFirebase.value.db_get_data('game_date');
+      if(game_date.length==0){
+        swal({
+          title: '無可用的打球日',
+          text: "",
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: true,
+          cancelButtonText: '離開',
+        }).then(()=>{
+          location.href = '/';
+        })
+      }else{
+        game_date_id.value = game_date[0].id;
+        game_date_data.value = game_date[0];
+      }
+    }
+    else{
+      const game_date = await refFirebase.value.db_get_data('game_date', [['id', '==', game_date_id.value]]);
+      if(game_date.length==0){
+        swal({
+          title: '無此打球日',
+          text: "",
+          icon: 'warning',
+          showConfirmButton: false,
+          showCancelButton: true,
+          cancelButtonText: '離開',
+        }).then(()=>{
+          location.href = '/';
+        })
+      }
+      game_date_data.value = game_date[0];
+    }
     
     /*取得人員資料*/
     users.splice(0, users.length);
     users_by_teams[0].splice(0, users_by_teams[0].length);
     users_by_teams.splice(1, users_by_teams.length-1);
     await get_play_users();
+
+    /*取得比賽資料*/
+    contest_record.splice(0, contest_record.length);
+    let contest_record_data = await refFirebase.value.db_get_data('game_records', [['game_date_id', '==', game_date_id.value], {orderBy:['create_time', 'desc']}]);
+    for (let x = 0; x < contest_record_data.length; x++) {
+      contest_record.push(contest_record_data[x]);
+    }
 
     /*避免重整*/
     window.onbeforeunload=function(e){
@@ -37,14 +83,9 @@
     refFirebase.value.set_body_block_show_long(false);
   }
   const get_play_users = async() => {
-    let user_data = await refFirebase.value.db_get_data('game_date_users', [['game_date_id','==', game_date_id]]);
+    let user_data = await refFirebase.value.get_game_date_users(game_date_id.value);
     for (let i = 0; i < user_data.length; i++) {
-      let data = user_data[i];
-      let user = await refFirebase.value.db_get_data('users', [['id','==', data.user_id]]);
-      user = user.length>0 ? user[0] : {};
-      let date_user_id = data.id;
-      data = {...data, ...user, date_user_id: date_user_id};
-      add_show_user(data);
+      add_show_user(user_data[i]);
     }
   }
   const add_show_user = (data) => {
@@ -194,9 +235,8 @@
   const court_complete = async() =>{
     let contest_data = copy_court(courts[pointModal.finish_index]);
     contest_record.unshift(contest_data);
-    console.log(contest_data);
-    /* TODO：儲存比賽紀錄 */
-    await refFirebase.value.db_add_data('game_records', {...contest_data, game_date_id:game_date_id});
+
+    await refFirebase.value.db_add_data('game_records', {...contest_data, game_date_id:game_date_id.value});
 
     /* 設定剛比完賽的人員 */
     played_user_ids.value = [];
@@ -676,6 +716,10 @@
 
   <main>
     <div class="bg-yellow-200 pb-6 relative">
+      <h2 class="text-center font-bold text-xl flex justify-center flex-wrap">
+        <span v-text="functions.stamp_to_time(game_date_data.date)"></span>
+        <span v-text="game_date_data.location"></span>  
+      </h2>
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==1"
