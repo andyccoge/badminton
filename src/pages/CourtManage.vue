@@ -68,12 +68,9 @@
     await get_play_users();
 
     /*取得比賽資料*/
-    contest_record.splice(0, contest_record.length);
-    let contest_record_data = await refFirebase.value.db_get_data('game_records', [['game_date_id', '==', game_date_id.value], {'orderBy':['create_time', 'desc']}]);
-    for (let x = 0; x < contest_record_data.length; x++) {
-      contest_record.push(contest_record_data[x]);
-    }
-    
+    await refContestRecord.value.init_data();
+    sync_contest_record();
+
     /* 取得場地資料 */
     courts.splice(0, courts.length);
     let courts_data = await refFirebase.value.db_get_data('game_date_courts', [['game_date_id', '==', game_date_id.value], {'orderBy':['create_time', 'asc']}]);
@@ -148,7 +145,7 @@
     if (court_index < 0 && court_index > courts.length) { return; }
     swal({
       title: '確定刪除場地？',
-      // text: "You won't be able to revert this!",
+      text: "刪除後會自動更新場上人員狀態",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: '確定',
@@ -234,11 +231,10 @@
 
   const court_complete = async() =>{
     let contest_data = copy_court(courts[pointModal.finish_index]);
-    console.log(contest_data)
-    contest_record.unshift(contest_data);
-
-    await refFirebase.value.db_add_data('game_records', {...contest_data, game_date_id:game_date_id.value});
-
+    
+    await refContestRecord.value.add_record(contest_data);
+    sync_contest_record();
+  
     /* 設定剛比完賽的人員 */
     played_user_ids.value = [];
     courts[pointModal.finish_index].users.forEach((group)=>{
@@ -347,9 +343,6 @@
     return court_is_empty;
   }
   const copy_court = (target_court) => {
-    // let copy = {};
-    // court_empty_keys.forEach(key => { copy[key] = target_court[key] });
-    // target_court.users.forEach((group, group_index)=>{ copy.users[group_index] = [...group] });
     let copy = JSON.parse(JSON.stringify(target_court));
     return copy;
   }
@@ -595,14 +588,14 @@
     if (user_index < 0 && user_index > users.length) { return; }
     swal({
       title: '確定刪除此人？',
-      // text: "You won't be able to revert this!",
+      text: "刪除後相關比賽紀錄可能顯示會有問題",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: '確定',
       confirmButtonColor: '#3085d6',
       cancelButtonText: '取消',
       cancelButtonColor: '#d33',
-    }).then((result) => {
+    }).then(async(result) => {
       if (result.isConfirmed) {
         let user = users[user_index];
         courts.forEach((court, court_index) => {
@@ -614,17 +607,27 @@
         });
         set_user_view(-1);
         menu_open_left.value = false;
-        users.splice(user_index, 1); 
+        await refFirebase.value.db_delete_data('game_date_users', user.date_user_id);
+        users.splice(user_index, 1);
       }
     });
   }
   provide('user_delete', user_delete);
 
   // 比賽紀錄-------------------------------------------------------------------------
+  let refContestRecord = ref(null);
   let modal_open_contest_record = ref(false);
   let contest_record = reactive([]);
   provide('modal_open_contest_record', modal_open_contest_record);
   provide('contest_record', readonly(contest_record));
+  const sync_contest_record = () => {
+    contest_record.splice(0, contest_record.length);
+    const refContestRecord_data = refContestRecord.value.get_data();
+    for (let x = 0; x < refContestRecord_data.contest_record.length; x++) {
+      contest_record.push(refContestRecord_data.contest_record[x]);
+    }
+  }
+    
 
   /*-- PWA功能 --*/
     /*加入主畫面-------------------------------*/
@@ -712,7 +715,7 @@
       </button>
     </template>
   </modal>
-  <ContestRecord></ContestRecord>
+  <ContestRecord ref="refContestRecord"></ContestRecord>
 
   <Nav></Nav>
   <Leftmenu></Leftmenu>

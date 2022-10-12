@@ -105,7 +105,7 @@
       </button>
     </div>
     <div class="table_container">
-      <table class="w-full flex flex-row flex-no-wrap sm:bg-white rounded-lg sm:shadow-lg">
+      <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
         <thead class="text-white">
           <tr v-for="(user, index) in users"
               class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
@@ -120,8 +120,8 @@
           </tr>
         </thead>
         <tbody class="flex-1 sm:flex-none">
-          <tr v-for="(user, index) in users" :class="[user.gender=='女' ?'bg-red-100' : 'bg-blue-100']"
-            class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
+          <tr v-for="(user, index) in users" class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0"
+              :class="[user.gender=='女' ?'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200']">
             <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
             <td class="border-grey-light border p-2">
               <div class="flex items-center">

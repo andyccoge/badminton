@@ -3,10 +3,13 @@
   import { useToast } from "vue-toastification";
   import Firebase from '../components/Firebase.vue';
   import Modal from '../components/Modal.vue';
+  import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
 
   const refFirebase = ref(null);
+  
+  const game_date_id = inject('game_date_id');
 
   let userModal  = reactive({ 
     show:false, index:-1, 
@@ -33,23 +36,67 @@
   }
 
   const user_save = async() => {
-    let target_user = {};
     if(!userModal.user.name){ toast.warning("請輸入姓名");return; }
-    userModal_keys.forEach(key => { target_user[key] = userModal.user[key] });
+    let target_user = JSON.parse(JSON.stringify(userModal.user));
 
+    refFirebase.value.set_body_block_show_long(true);
     if(userModal.index==-1){
-      target_user = await refFirebase.value.db_add_data('users', target_user, [
-        ['name', '==', target_user.name]
-      ]);
+      let repeat_users = await refFirebase.value.db_get_data('users', [['name', '==', target_user.name]]);
+      if(repeat_users.length==0){
+        target_user = await refFirebase.value.db_add_data('users', target_user);
+      }
+      else{
+        let button_html = '<button class="btn user px-2 py-2 mx-3 my-2 rounded bg-red-600 text-white" index="強制建立">強制建立</button>';
+        for (let x = 0; x < repeat_users.length; x++) {
+          const repeat = repeat_users[x];
+          const gender_class = repeat.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400';
+          button_html += '<button class="btn user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'">'+ 
+                            repeat.name + 
+                            '('+ (repeat.nick ? repeat.nick+' ': '') + functions.stamp_to_time(repeat.create_time) +')\
+                          </button>';
+        }
+        await swal({
+          title: '有重複人員：' + target_user.name,
+          text: "無法判別人員，請透過單一設定選擇",
+          icon: 'warning',
+          html: button_html,
+          showConfirmButton: false,
+          showCancelButton: true,
+          cancelButtonText: '跳過',
+          didOpen: () => {
+            document.querySelectorAll('button.user').forEach(element => {
+              element.addEventListener('click', async(e) => {
+                refFirebase.value.set_body_block_show_top(true);
+                let index = element.getAttribute('index');
+                if(index=='強制建立'){
+                  target_user = await refFirebase.value.db_add_data('users', target_user);
+                }else{
+                  target_user = repeat_users[index];
+                }
+                refFirebase.value.set_body_block_show_top(false);
+                swal.close();
+              });
+            });
+          }
+        });
+      }
+      if(game_date_id){
+        const add_result = await refFirebase.value.add_game_date_users(game_date_id.value, target_user.id);
+        if(!add_result){ 
+          target_user = null;
+          toast.info("此人員已加入該打球日中");
+        }
+      }
     }else{
-      let result = await refFirebase.value.db_update_data('users', target_user.id, target_user);
-      if(!result){ return; }
+      const update_result = await refFirebase.value.db_update_data('users', target_user.id, target_user);
+      if(!update_result){ target_user = null; }
     }
+    refFirebase.value.set_body_block_show_long(false);
 
     if(target_user){
       toast.success("資料已儲存");
       if(userModal.index==-1){
-        userModal_keys.forEach(key => { userModal.user[key] = user_empty[key] });
+        userModal.user = JSON.parse(JSON.stringify(user_empty));
       }
       emit('change_user_data', userModal.index, target_user);
     }

@@ -129,6 +129,9 @@
         ['game_date_id', '==', game_date_id],
         ['user_id', '==', user_id]
       ]);
+      return true; /* 不存在，建立 */
+    }else{
+      return false; /* 已存在，不建立 */
     }
   }
   const get_game_date_users = async(game_date_id) => {

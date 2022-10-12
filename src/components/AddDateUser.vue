@@ -51,23 +51,22 @@
       let user_id = '';
       const d = data[i].trim();
       if(d){
+        let target_user = {name:d};
         let repeat_users = await refFirebase.value.db_get_data('users', [['name', '==', d]]);
         if(repeat_users.length<2){
           if(repeat_users.length==0){
-            let new_user = {name:d};
-            new_user = await refFirebase.value.db_add_data('users', new_user);
-            user_id = new_user.id;
+            target_user = await refFirebase.value.db_add_data('users', target_user);
+            user_id = target_user.id;
           }else if(repeat_users.length==1){
             user_id = repeat_users[0].id;
           }
-          await refFirebase.value.add_game_date_users(game_date_id.value, user_id);
         }
         else{
-          let button_html = '';
+          let button_html = '<button class="btn user px-2 py-2 mx-3 my-2 rounded bg-red-600 text-white" index="強制建立">強制建立</button>';
           for (let x = 0; x < repeat_users.length; x++) {
             const repeat = repeat_users[x];
             const gender_class = repeat.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400';
-            button_html += '<button class="btn user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" val="'+ repeat.id +'">'+ 
+            button_html += '<button class="btn user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'">'+ 
                               repeat.name + 
                               '('+ (repeat.nick ? repeat.nick+' ': '') + functions.stamp_to_time(repeat.create_time) +')\
                             </button>';
@@ -84,18 +83,30 @@
               document.querySelectorAll('button.user').forEach(element => {
                 element.addEventListener('click', async(e) => {
                   refFirebase.value.set_body_block_show_top(true);
-                  let id = element.getAttribute('val');
-                  await refFirebase.value.add_game_date_users(game_date_id.value, id);
+                  let index = element.getAttribute('index');
+                  if(index=='強制建立'){
+                    target_user = await refFirebase.value.db_add_data('users', target_user);
+                  }else{
+                    target_user = repeat_users[index];
+                  }
                   refFirebase.value.set_body_block_show_top(false);
                   swal.close();
-                })
+                });
               });
             }
           });
+          if(target_user){ user_id = target_user.id; }
+        }
+        if(user_id){
+          const add_result = await refFirebase.value.add_game_date_users(game_date_id.value, user_id);
+          if(!add_result){ 
+            toast.info("此人員已加入該打球日中");
+          }
         }
       }
     }
-    users_input_data.value = '';  
+    users_input_data.value = '';
+    await get_users();
     await get_game_date_users();
     refFirebase.value.set_body_block_show_long(false);
     toast.success('設定成功');
@@ -103,10 +114,14 @@
 
   const select_user = async(user_index) =>{
     refFirebase.value.set_body_block_show_long(true);
-    await refFirebase.value.add_game_date_users(game_date_id.value, users[user_index].id);
-    await get_game_date_users();
+    const add_result = await refFirebase.value.add_game_date_users(game_date_id.value, users[user_index].id);
+    if(!add_result){ 
+      toast.info("此人員已加入該打球日中");
+    }else{
+      await get_game_date_users();
+      toast.success('設定成功');
+    }
     refFirebase.value.set_body_block_show_long(false);
-    toast.success('設定成功');
   }
   provide('select_user', select_user);
 
@@ -123,7 +138,6 @@
     for (let i = 0; i < user_data.length; i++) {
       date_users.push(user_data[i]);
     }
-    // console.log(date_users);
   }
 
   const user_delete = (user_index) => {
@@ -169,7 +183,7 @@
     </button>
     <hr class="my-3">
     <div class="table_container">
-      <table class="w-full flex flex-row flex-no-wrap sm:bg-white rounded-lg sm:shadow-lg">
+      <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
         <thead class="text-white">
           <tr v-for="(user, index) in date_users"
               class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
@@ -184,8 +198,8 @@
           </tr>
         </thead>
         <tbody class="flex-1 sm:flex-none">
-          <tr v-for="(user, index) in date_users" :class="[user.gender=='女' ?'bg-red-100' : 'bg-blue-100']"
-            class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
+          <tr v-for="(user, index) in date_users" class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0"
+              :class="[user.gender=='女' ?'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200']">
             <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
             <td class="border-grey-light border p-2">
                 <a class="text-blue-500" href="###" @click="userModal_open(index)"><span v-text="user.name"></span></a>

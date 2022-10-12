@@ -6,6 +6,7 @@
   import * as functions from '../functions.js';
   import ModalDateEditor from '../components/ModalDateEditor.vue';
   import NavSetting from '../components/NavSetting.vue';
+  import ContestRecord from '../components/ContestRecord.vue';
   import CourtEditor from '../components/CourtEditor.vue';
   import AddDateUser from '../components/AddDateUser.vue';
   const toast = useToast();
@@ -25,17 +26,9 @@
     for (let x = 0; x < courts_data.length; x++) {
       courts.push(courts_data[x]);
     }
-  }
 
-  // 新增/編輯打球日-------------------------------------------------------------------------
-  const refModalDateEditor = ref(null);
-  const dateModal_open = (target_index=-1) => {
-    let target = target_index!=-1 ? Object.assign({}, dates[target_index]) : null;
-    refModalDateEditor.value.set_data(target_index, target);
-  }
-  const change_date_data = async(target_index, data) => {
-    let keys = Object.keys(data);
-    keys.forEach(key => { dates[target_index][key] = data[key] });
+    /*取得比賽資料*/
+    refContestRecord.value.init_data();
   }
 
   // 打球日列表(打球日資料)-------------------------------------------------------------------------
@@ -61,6 +54,24 @@
       dates.push(data);
     });
   }
+
+  // 新增/編輯打球日-------------------------------------------------------------------------
+  const refModalDateEditor = ref(null);
+  const dateModal_open = (target_index=-1) => {
+    let target = target_index!=-1 ? Object.assign({}, dates[target_index]) : null;
+    refModalDateEditor.value.set_data(target_index, target);
+  }
+  const change_date_data = async(target_index, data) => {
+    let keys = Object.keys(data);
+    keys.forEach(key => { dates[target_index][key] = data[key] });
+  }
+
+  // 比賽紀錄-------------------------------------------------------------------------
+  let refContestRecord = ref(null);
+  let modal_open_contest_record = ref(false);
+  let contest_record = reactive([]);
+  provide('modal_open_contest_record', modal_open_contest_record);
+  provide('contest_record', readonly(contest_record));
 
   // 打球日場地-------------------------------------------------------------------------
   let courts = reactive([]);
@@ -94,6 +105,7 @@
 <template>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
+  <ContestRecord ref="refContestRecord"></ContestRecord>
   <ModalDateEditor @change_data="change_date_data" ref="refModalDateEditor"></ModalDateEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <NavSetting></NavSetting>
@@ -103,7 +115,7 @@
     <div class="mt-2 mb-5">
       <h3 class="text-xl font-bold">時間/地點</h3>
       <div class="table_container">
-        <table class="w-full flex flex-row flex-no-wrap sm:bg-white rounded-lg sm:shadow-lg">
+        <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
           <thead class="text-white">
             <tr v-for="(date, index) in dates"
                 class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
@@ -143,6 +155,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                     </svg>
                   </button>
+                  <button class="sm:mr-0 mr-2 rounded bg-yellow-500 border-2 border-yellow-700" @click="modal_open_contest_record=true">
+                    <svg  class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5" />
+                    </svg>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -156,7 +173,7 @@
         場地設定
       </h3>
       <div class="table_container">
-        <table class="w-full flex flex-row flex-no-wrap sm:bg-white rounded-lg sm:shadow-lg">
+        <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
           <thead class="text-white">
             <tr v-for="(court, index) in courts"
                 class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
@@ -167,8 +184,8 @@
             </tr>
           </thead>
           <tbody class="flex-1 sm:flex-none">
-            <tr v-for="(court, index) in courts" :class="[court.type==1 ?'bg-green-100' : 'bg-yellow-100']"
-              class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
+            <tr v-for="(court, index) in courts" class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0"
+                :class="[court.type==1 ?'bg-green-100 hover:bg-green-200' : 'bg-yellow-100 hover:bg-yellow-200']">
               <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
               <td class="border-grey-light border p-2">
                 <a class="text-blue-500" href="###" @click="court_eidt(index)" v-if="court.type==1"><span v-text="court.name"></span></a>
