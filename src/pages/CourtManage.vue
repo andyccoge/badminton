@@ -11,6 +11,7 @@
   import Court from '../components/Court.vue';
   import CourtEditor from '../components/CourtEditor.vue';
   import ContestRecord from '../components/ContestRecord.vue';
+  import ModalPoints from '../components/ModalPoints.vue';
   import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
@@ -77,6 +78,7 @@
     for (let x = 0; x < courts_data.length; x++) {
       courts.push(courts_data[x]);
     }
+    // console.log(courts);
     refBottommenu.value.init_alert_wait();
 
     /*避免重整*/
@@ -192,36 +194,23 @@
       return true;
     }
   }
-  let pointModal = reactive({
-    show: false, repeat_index: -1, finish_index: -1,
-  });
-  const model_point_input = ref(null);
   const court_repeat = (court_index) => {
     let result = court_stop(court_index);
     if(!result){ return; }
 
     if(check_court_empty(court_index)){
       toast.warning("無比賽人員，無法再來一場");return;
-    }      
-    pointModal.repeat_index = court_index;
-    pointModal.finish_index = court_index;
-    court_complete();
-    // pointModal.show = true;
-    // setTimeout(()=>{ model_point_input.value.focus() }, 100);
+    }
+
+    // refModalPoints.value.set_modal_data(court_index, court_index, courts[court_index]);
+    court_complete(court_index, court_index);
   }
   const court_next = (court_index) => {
     let result = court_stop(court_index);
     if(!result){ return; }
 
-    pointModal.repeat_index = -1;
-    pointModal.finish_index = court_index;
-    if(check_court_empty(court_index)){
-      court_complete();
-    }else{
-      court_complete();
-      // pointModal.show = true;
-      // setTimeout(()=>{ model_point_input.value.focus() }, 100);
-    }
+    // refModalPoints.value.set_modal_data(court_index, -1, courts[court_index]);
+    court_complete(court_index, -1);
   }
   provide('court_delete', court_delete);
   provide('court_start', court_start);
@@ -229,38 +218,82 @@
   provide('court_repeat', court_repeat);
   provide('court_next', court_next);
 
-  const court_complete = async() =>{
-    let contest_data = copy_court(courts[pointModal.finish_index]);
+  const court_delete_user = (court_index, group, index) => {
+    let user_id = courts[court_index].users[group][index];
+    courts[court_index].users[group][index] = "0";
+    user_set_status(user_id, 0, 'user_id');
+  }
+  provide('court_delete_user', court_delete_user);
+  const user_set_status = (key=-1, status, search_type='user_id') => {
+    if(key < 0 || key===''){ return; }
+
+    let user_id = "";
+    let user_index = "";
+    if(search_type=='user_id'){
+      users.forEach((user,index) => {
+        if(user.id==key){
+          user_id = key
+          user_index = index;
+        };
+      });
+    }
+    else if(search_type=='user_index'){
+      if(key >= users.length){ return; }
+      user_id = users[key].id;
+      user_index = key;
+    }
+    if(user_index===""){ return; }
+    if(status==1){
+      if(check_on_court(user_id)){
+        users[user_index].status = status;
+      }
+    }
+    else if(status==0){
+      if(!check_on_court(user_id)){
+        users[user_index].status = status;
+      }
+    }
+  }
+
+  // 分數面板-------------------------------------------------------------------------
+  const refModalPoints = ref(null);
+  const update_court_points = (court_index, repeat_index, points) => {
+    courts[court_index].game_points = points;
+    court_complete(court_index, repeat_index);
+  }
+
+  let played_user_ids = ref([]);
+  const court_complete = async(finish_index, repeat_index) =>{
+    let contest_data = copy_court(courts[finish_index]);
     
     await refContestRecord.value.add_record(contest_data);
     sync_contest_record();
   
     /* 設定剛比完賽的人員 */
     played_user_ids.value = [];
-    courts[pointModal.finish_index].users.forEach((group)=>{
+    courts[finish_index].users.forEach((group)=>{
       group.forEach((user_id) => { played_user_ids.value.push(user_id); });
     });
     
     let has_next_game = null;
-    if(pointModal.repeat_index!=-1){ /* 再一場 */
+    if(repeat_index!=-1){ /* 再一場 */
       has_next_game = true;
     }
     else{ /* 換下一場 */
-      has_next_game = court_change(pointModal.finish_index); /* 檢查是否有下一場比賽 */
+      has_next_game = court_change(finish_index); /* 檢查是否有下一場比賽 */
     }
       
-    change_user_calculate(pointModal.finish_index); /* 更新人員比賽統計 */
+    change_user_calculate(finish_index); /* 更新人員比賽統計 */
     if(has_next_game){
-      start_new_game(pointModal.finish_index);
+      start_new_game(finish_index);
     }else{
-      court_reset(pointModal.finish_index, true);
+      court_reset(finish_index, true);
     }
-    if(check_court_empty(pointModal.finish_index)){     
+    if(check_court_empty(finish_index)){     
         toast.warning("目前已無預備人員，或預備人員正在場上");
     }else{
-      toast.success(courts[pointModal.finish_index].name + " 已換下一場");
+      toast.success(courts[finish_index].name + " 已換下一場");
     }
-    pointModal.show = false;
   }
   const court_change = (court_index) => {  
     /* 設定場上人員下場 */
@@ -412,57 +445,13 @@
   const user_play_data_empty = {played:0, wait:0, status:0};
   let users = reactive([]);
   let users_by_teams = reactive([[...users.map((user=>{return user.id}))]]);
-  provide('users_by_teams', readonly(users_by_teams));
+  const users_rest = computed(()=> { return users.filter(user => user.status==0)});
   provide('users', readonly(users));
+  provide('users_by_teams', readonly(users_by_teams));
+  provide('users_rest', readonly(users_rest));
 
   let team_select_uesr_ids = ref([]);
-  let played_user_ids = ref([]);
-  const users_rest = computed(()=> { return users.filter(user => user.status==0)});
   provide('team_select_uesr_ids', readonly(team_select_uesr_ids));
-  provide('users_rest', readonly(users_rest));
-  const get_user_name = (user_id) => {
-    for (let index = 0; index < users.length; index++) {
-      const element = users[index];
-      if(element.id==user_id){ return element.nick ? element.nick : element.name; };
-    }
-  }
-  provide('get_user_name', get_user_name);
-  const court_delete_user = (court_index, group, index) => {
-    let user_id = courts[court_index].users[group][index];
-    courts[court_index].users[group][index] = "0";
-    user_set_status(user_id, 0, 'user_id');
-  }
-  provide('court_delete_user', court_delete_user);
-  const user_set_status = (key=-1, status, search_type='user_id') => {
-    if(key < 0 || key===''){ return; }
-
-    let user_id = "";
-    let user_index = "";
-    if(search_type=='user_id'){
-      users.forEach((user,index) => {
-        if(user.id==key){
-          user_id = key
-          user_index = index;
-        };
-      });
-    }
-    else if(search_type=='user_index'){
-      if(key >= users.length){ return; }
-      user_id = users[key].id;
-      user_index = key;
-    }
-    if(user_index===""){ return; }
-    if(status==1){
-      if(check_on_court(user_id)){
-        users[user_index].status = status;
-      }
-    }
-    else if(status==0){
-      if(!check_on_court(user_id)){
-        users[user_index].status = status;
-      }
-    }
-  }
 
   let chage_user = reactive({court_index: -1, user_group: 0, user_index: 0});
   const court_chage_user = (court_index, user_group, user_index) => {
@@ -532,9 +521,6 @@
 
     team_select_uesr_ids.value = [];
   }
-  const set_user_view  = (user_index) => {
-    user_view_index.value = user_index;
-  }
   const check_on_court = (user_id, court_type=1) => {
     let on_court = false;
     for (let i = 0; i < courts.length; i++) {
@@ -555,6 +541,10 @@
   provide('select_user', select_user);
   provide('grouping_users', grouping_users);
   provide('check_on_court', check_on_court);
+
+  const set_user_view  = (user_index) => {
+    user_view_index.value = user_index;
+  }
 
   // 左側人員詳細料面板-------------------------------------------------------------------------
   let menu_open_left = ref(false);
@@ -662,42 +652,7 @@
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
   <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
-
-  <!-- 輸入比數 -->
-  <modal :show="pointModal.show" :click_bg_close="true" 
-         @close="pointModal.show = false; court_start(pointModal.finish_index);">
-    <template #header>
-      <h3 class="font-bold text-xl">輸入比數</h3>
-    </template>
-    <template #body>
-      <div class="flex">
-        <div class="text-center">
-          <span v-text="get_user_name(courts[pointModal.finish_index].users[0][0])"></span>
-          <span v-if="courts[pointModal.finish_index].users[0][0]!=0 && courts[pointModal.finish_index].users[0][1]!=0">、</span>
-          <span v-text="get_user_name(courts[pointModal.finish_index].users[0][1])"></span>
-          <input type="number" step="1" min="0" class="form-input px-1 py-1 rounded w-full"
-                 @keyup.enter="court_complete"
-                 v-model="courts[pointModal.finish_index].game_points[0]" ref="model_point_input"/>
-        </div>
-        <div class="p-1"><br>：</div>
-        <div class="text-center">
-          <span v-text="get_user_name(courts[pointModal.finish_index].users[1][0])"></span>
-          <span v-if="courts[pointModal.finish_index].users[1][0]!=0 && courts[pointModal.finish_index].users[1][1]!=0">、</span>
-          <span v-text="get_user_name(courts[pointModal.finish_index].users[1][1])"></span>
-          <input type="number" step="1" min="0" class="form-input px-1 py-1 rounded w-full"
-                 @keyup.enter="court_complete"
-                 v-model="courts[pointModal.finish_index].game_points[1]"/>
-        </div>
-      </div>
-    </template>
-    <template #footer>
-      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
-              @click="court_complete">
-        完成比賽
-      </button>
-    </template>
-  </modal>
+  <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
 
   <!-- 加入主頁面 -->
   <modal :show="modal_open_add_home!=null" :click_bg_close="true" @close="modal_open_add_home=null;">

@@ -79,3 +79,11 @@ export function get_href_attr(attr=''){
   }
   return attr;
 }
+
+export function get_user_name(users, user_id){
+  for (let index = 0; index < users.length; index++) {
+    const element = users[index];
+    if(element.id==user_id){ return element.nick ? element.nick : element.name; };
+  }
+  return "";
+}
