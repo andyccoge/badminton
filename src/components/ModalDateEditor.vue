@@ -64,6 +64,7 @@
         dataModal_date.value = '';
       }
       emit('change_data', dataModal.index, target);
+      dataModal.show = false;
     }
   }
 

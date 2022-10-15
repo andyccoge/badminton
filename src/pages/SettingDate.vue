@@ -97,6 +97,14 @@
     <div class="table_container">
       <table class="w-full flex flex-row flex-no-wrap sm:bg-white rounded-lg sm:shadow-lg">
         <thead class="text-white">
+          <tr v-if="dates.length==0"
+              class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
+            <th class="border-grey-light border p-2 sm:border-0" style="width: 100px;">序號</th>
+            <th class="border-grey-light border p-2 sm:border-0 w_250px">ID</th>
+            <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">日期時間</span></th>
+            <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">地點</span></th>
+            <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">操作</span></th>
+          </tr>
           <tr v-for="(date, index) in dates"
               class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
             <th class="border-grey-light border p-2 sm:border-0" style="width: 100px;">序號</th>

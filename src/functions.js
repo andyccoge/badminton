@@ -87,3 +87,10 @@ export function get_user_name(users, user_id){
   }
   return "";
 }
+
+export function merge_user_and_date_user_data(user, game_date_user_data){
+  let date_user_id = game_date_user_data.id;
+  const merge_data = {...game_date_user_data, ...user, date_user_id: date_user_id};
+  return merge_data
+}
+      

@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, reactive, inject, watch, onMounted, provide} from 'vue';
+  import { ref, reactive, inject, provide} from 'vue';
   // import { useToast } from "vue-toastification";
   import Firebase from '../components/Firebase.vue';
   import ModalFirebase from '../components/ModalFirebase.vue';
@@ -86,6 +86,14 @@
       <div class="table_container">
         <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
           <thead class="text-white">
+            <tr v-if="contest_record.length==0"
+                class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
+              <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>
+              <th class="border-grey-light border p-2 sm:border-0">隊伍1</th>
+              <th class="border-grey-light border p-2 sm:border-0">比數</th>
+              <th class="border-grey-light border p-2 sm:border-0">隊伍2</th>
+              <th class="border-grey-light border p-2 sm:border-0 text-right">時間</th>
+            </tr>
             <tr v-for="(record, index) in contest_record"
                 class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
               <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>

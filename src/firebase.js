@@ -48,7 +48,7 @@ export async function get_db_data(table, cond=[{'orderBy':["create_time", "desc"
   return dataList;
 }
 
-const data_with_base_column = (table, data, type='add') => {
+const data_with_base_column = (table, data, add_column=false) => {
   let data_copy = JSON.parse(JSON.stringify(data));
   let empty_data = {}; /* create_time */
   if(table=='users'){
@@ -70,24 +70,25 @@ const data_with_base_column = (table, data, type='add') => {
   }
 
   let keys = Object.keys(empty_data);
-  if(type=='add'){ /* 補欄位 */
+  if(add_column){ /* 補欄位 */
     keys.forEach(key => { 
       if(typeof(data_copy[key])=='undefined'){ data_copy[key] = empty_data[key]; }
     });
   }
-  else{ /* 刪欄位 */
-    let clear_data = {};
-    keys.forEach(key => {
-      if(typeof(data_copy[key])!='undefined'){ clear_data[key] = data_copy[key]; }
-    });
-    delete clear_data.id;
-    data_copy = clear_data;
-  }
+
+  /* 刪欄位 */
+  let clear_data = {};
+  keys.forEach(key => {
+    if(typeof(data_copy[key])!='undefined'){ clear_data[key] = data_copy[key]; }
+  });
+  delete clear_data.id;
+  data_copy = clear_data;
+
   return data_copy;
 }
 
 export async function add_data(table, data) {
-  data = data_with_base_column(table, data);
+  data = data_with_base_column(table, data, true);
   data['create_time'] = Date.now();
   let docRef = await addDoc(collection(firebase_db, table), data);
   let docRef_new = doc(firebase_db, table, docRef.id);
@@ -106,7 +107,7 @@ export async function set_data(table, data) {
 }
 
 export async function update_data(table, id, data) {
-  data = data_with_base_column(table, data, 'minus');
+  data = data_with_base_column(table, data, false);
   const docRef = doc(firebase_db, table, id);
   await updateDoc(docRef, data);
 }

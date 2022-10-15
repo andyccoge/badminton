@@ -81,6 +81,11 @@
     // console.log(courts);
     refBottommenu.value.init_alert_wait();
 
+    /* 更新人員狀態 */
+    users.forEach((user, index) => {
+      user_set_status(index, 1, 'user_index');
+    });
+
     /*避免重整*/
     window.onbeforeunload=function(e){
       var e=window.event||e;
@@ -178,6 +183,7 @@
       courts[court_index].timer = setInterval(function(){
         courts[court_index].time += 1;
       }, 1000);
+      refFirebase.value.db_update_data('game_date_courts', courts[court_index].id, {'users':courts[court_index].users});
     }
   }
   const court_stop = (court_index, need_notify=true) => {
@@ -224,6 +230,7 @@
     user_set_status(user_id, 0, 'user_id');
   }
   provide('court_delete_user', court_delete_user);
+  /* 設定人員狀態(1.比賽 0.閒置，只在場上人員更新後使用，會檢查當前場地人員安排是否符合要求設定的人員狀態) */
   const user_set_status = (key=-1, status, search_type='user_id') => {
     if(key < 0 || key===''){ return; }
 
@@ -415,6 +422,15 @@
     }
   }
 
+  // 人員資料-------------------------------------------------------------------------
+  const user_play_data_empty = {played:0, wait:0, status:0};
+  let users = reactive([]);
+  let users_by_teams = reactive([[...users.map((user=>{return user.id}))]]);
+  const users_rest = computed(()=> { return users.filter(user => user.status==0)});
+  provide('users', readonly(users));
+  provide('users_by_teams', readonly(users_by_teams));
+  provide('users_rest', readonly(users_rest));
+
   // 下方人員面板-------------------------------------------------------------------------
   let refBottommenu = ref(null);
   let menu_open_bottom = ref(false);
@@ -422,7 +438,8 @@
   let bottom_nav_more = ref(true);
   provide('bottom_nav_more', bottom_nav_more);
   
-  let grouping_users_mode = ref(false) 
+  let team_select_uesr_ids = ref([]);
+  let grouping_users_mode = ref(false);
   const grouping_users_toggle = (status=0) => {
     if(grouping_users_mode.value || status==-1){
       if(grouping_users_mode.value){
@@ -439,20 +456,10 @@
       menu_open_bottom.value = true;
     }
   }
+  provide('team_select_uesr_ids', readonly(team_select_uesr_ids));
   provide('grouping_users_mode', grouping_users_mode);
   provide('grouping_users_toggle', grouping_users_toggle);
-
-  const user_play_data_empty = {played:0, wait:0, status:0};
-  let users = reactive([]);
-  let users_by_teams = reactive([[...users.map((user=>{return user.id}))]]);
-  const users_rest = computed(()=> { return users.filter(user => user.status==0)});
-  provide('users', readonly(users));
-  provide('users_by_teams', readonly(users_by_teams));
-  provide('users_rest', readonly(users_rest));
-
-  let team_select_uesr_ids = ref([]);
-  provide('team_select_uesr_ids', readonly(team_select_uesr_ids));
-
+  
   let chage_user = reactive({court_index: -1, user_group: 0, user_index: 0});
   const court_chage_user = (court_index, user_group, user_index) => {
     chage_user.court_index = court_index;

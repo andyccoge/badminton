@@ -60,9 +60,9 @@
           text: "無法判別人員，請透過單一設定選擇",
           icon: 'warning',
           html: button_html,
-          showConfirmButton: false,
-          showCancelButton: true,
-          cancelButtonText: '跳過',
+          showConfirmButton: true,
+          confirmButtonText: '跳過',
+          confirmButtonColor: '#6e7881',
           didOpen: () => {
             document.querySelectorAll('button.user').forEach(element => {
               element.addEventListener('click', async(e) => {
@@ -71,18 +71,28 @@
                 if(index=='強制建立'){
                   target_user = await refFirebase.value.db_add_data('users', target_user);
                 }else{
-                  target_user = repeat_users[index];
+                  if(game_date_id){
+                    target_user = repeat_users[index];
+                  }else{
+                    target_user = null;
+                  }
                 }
                 refFirebase.value.set_body_block_show_top(false);
                 swal.close();
               });
             });
           }
+        }).then((result) => {
+          if(result.isConfirmed){
+            target_user = null;
+          }
         });
       }
-      if(game_date_id){
+      if(game_date_id && target_user){
         const add_result = await refFirebase.value.add_game_date_users(game_date_id.value, target_user.id);
-        if(!add_result){ 
+        if(add_result){
+          target_user = functions.merge_user_and_date_user_data(target_user, add_result);
+        }else{
           target_user = null;
           toast.info("此人員已加入該打球日中");
         }

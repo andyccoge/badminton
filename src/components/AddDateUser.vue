@@ -5,6 +5,7 @@
   import ModalFirebase from '../components/ModalFirebase.vue';
   import ModalUserEditor from '../components/ModalUserEditor.vue';
   import User from '../components/User.vue';
+  import UserList from '../components/UserList.vue';
   import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
@@ -29,8 +30,14 @@
   const change_user_data = (user_index, user_data) => {
     refFirebase.value.set_body_block_show_long(true);
     let user_keys = Object.keys(user_data);
-    user_keys.forEach(key => { date_users[user_index][key] = user_data[key] });
-    get_users();
+    if(user_data){
+      if(user_index==-1){
+        date_users.push(user_data);
+      }else{
+        user_keys.forEach(key => { date_users[user_index][key] = user_data[key] });
+      }
+      get_users();
+    }
     refFirebase.value.set_body_block_show_long(false);
   }
 
@@ -47,6 +54,7 @@
       refFirebase.value.set_body_block_show_long(false);
       toast.warning('請輸入員名稱');return;
     }
+    let changed = false;
     for (let i = 0; i < data.length; i++) {
       let user_id = '';
       const d = data[i].trim();
@@ -99,17 +107,22 @@
         }
         if(user_id){
           const add_result = await refFirebase.value.add_game_date_users(game_date_id.value, user_id);
-          if(!add_result){ 
+          if(add_result){
+            changed = true;
+          }else{
             toast.info("此人員已加入該打球日中");
           }
         }
       }
     }
     users_input_data.value = '';
-    await get_users();
-    await get_game_date_users();
+
+    if(changed){
+      await get_users();
+      await get_game_date_users();
+      toast.success('設定成功');
+    }
     refFirebase.value.set_body_block_show_long(false);
-    toast.success('設定成功');
   }
 
   const select_user = async(user_index) =>{
@@ -153,8 +166,10 @@
       cancelButtonColor: '#d33',
     }).then(async(result) => {
       if (result.isConfirmed) {
-        await refFirebase.value.db_delete_data('game_date_users', date_users[user_index].date_user_id);
-        date_users.splice(user_index, 1);
+        const result = await refFirebase.value.db_delete_data('game_date_users', date_users[user_index].date_user_id);
+        if(result){
+          date_users.splice(user_index, 1);
+        }
       }
     });
   }
@@ -182,57 +197,21 @@
         批次設定
     </button>
     <hr class="my-3">
-    <div class="table_container">
-      <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
-        <thead class="text-white">
-          <tr v-for="(user, index) in date_users"
-              class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
-            <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>
-            <th class="border-grey-light border p-2 sm:border-0">姓名</th>
-            <th class="border-grey-light border p-2 sm:border-0">暱稱</th>
-            <th class="border-grey-light border p-2 sm:border-0">性別</th>
-            <th class="border-grey-light border p-2 sm:border-0 text-right">等級</th>
-            <th class="border-grey-light border p-2 sm:border-0">信箱</th>
-            <th class="border-grey-light border p-2 sm:border-0">電話</th>
-            <th class="border-grey-light border p-2 sm:border-0">操作</th>
-          </tr>
-        </thead>
-        <tbody class="flex-1 sm:flex-none">
-          <tr v-for="(user, index) in date_users" class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0"
-              :class="[user.gender=='女' ?'bg-red-100 hover:bg-red-200' : 'bg-blue-100 hover:bg-blue-200']">
-            <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
-            <td class="border-grey-light border p-2">
-                <a class="text-blue-500" href="###" @click="userModal_open(index)"><span v-text="user.name"></span></a>
-            </td>
-            <td class="border-grey-light border p-2"><span v-text="user.nick"></span></td>
-            <td class="border-grey-light border p-2"><span v-text="user.gender"></span></td>
-            <td class="border-grey-light border p-2 text-right"><span v-text="user.level"></span></td>
-            <td class="border-grey-light border p-2"><span v-text="user.email"></span></td>
-            <td class="border-grey-light border p-2"><span v-text="user.phone"></span></td>
-            <td class="border-grey-light border p-1">
-              <div class="sm:flex block justify-around mt-0.5 flex-wrap">
-                <button class="sm:mr-0 mr-2 rounded bg-blue-500 border-2 border-blue-700"
-                        @click="userModal_open(index)">
-                  <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                </button>
-                <button class="sm:mr-0 mr-2  rounded bg-red-500 border-2 border-red-700"
-                        @click="user_delete(index)">
-                  <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="7" x2="20" y2="7" />  <line x1="10" y1="11" x2="10" y2="17" />  <line x1="14" y1="11" x2="14" y2="17" />  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div>
+      <button class="flex items-center font-bold py-1 px-4 ml-2 border-b-4 rounded text-white
+                     bg-yellow-500 hover:bg-yellow-400 border-yellow-700 hover:border-yellow-500" 
+              @click="userModal_open(-1)">
+        <span class="mr-2">單一新增</span>
+        <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+      </button>
     </div>
+    <UserList :users="date_users" @userModal_open="userModal_open" @user_delete="user_delete"></UserList>
   </div>
 </template>
 
-<style scoped>
-  @import url("../assets/table.css");
-  
+<style scoped> 
   textarea{
     min-height: 2.5rem;
   }

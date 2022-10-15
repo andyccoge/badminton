@@ -2,8 +2,8 @@
   import { ref, reactive, inject, onMounted } from 'vue';
   import * as firebase from '../firebase.js';
   import { useToast } from "vue-toastification";
-  import Modal from '../components/Modal.vue';
   import BodyBlock from '../components/BodyBlock.vue';
+  import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
 
@@ -125,25 +125,23 @@
       ['user_id', '==', user_id]
     ]);
     if(repeat.length==0){
-      await db_add_data('game_date_users', new_data, [
+      const result = await db_add_data('game_date_users', new_data, [
         ['game_date_id', '==', game_date_id],
         ['user_id', '==', user_id]
       ]);
-      return true; /* 不存在，建立 */
+      return result; /* 不存在，建立 */
     }else{
-      return false; /* 已存在，不建立 */
+      return null; /* 已存在，不建立 */
     }
   }
   const get_game_date_users = async(game_date_id) => {
-    let user_data = await db_get_data('game_date_users', [['game_date_id','==', game_date_id], {'orderBy':['create_time', 'asc']}]);
-    for (let i = 0; i < user_data.length; i++) {
-      let data = user_data[i];
-      let user = await db_get_data('users', [['id','==', data.user_id]]);
+    let game_date_user_data = await db_get_data('game_date_users', [['game_date_id','==', game_date_id], {'orderBy':['create_time', 'asc']}]);
+    for (let i = 0; i < game_date_user_data.length; i++) {
+      let user = await db_get_data('users', [['id','==', game_date_user_data[i].user_id]]);
       user = user.length>0 ? user[0] : {};
-      let date_user_id = data.id;
-      user_data[i] = {...data, ...user, date_user_id: date_user_id};
+      game_date_user_data[i] = functions.merge_user_and_date_user_data(user, game_date_user_data[i]);
     }
-    return user_data;
+    return game_date_user_data;
   }
           
 
