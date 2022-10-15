@@ -93,7 +93,7 @@
     <p class="text-red-600">※此處新增不會檢查資料庫是否重複，因為姓名可重複</p>
     <button @click="add_users"
             class="w-full font-bold py-1 px-4 border-b-4 rounded
-                bg-green-500 hover:bg-green-400 text-white border-green-700 hover:border-green-500">
+                bg-red-500 hover:bg-red-400 text-white border-red-700 hover:border-red-500">
         批次新增
     </button>
     <hr class="my-3">
