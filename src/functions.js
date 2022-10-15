@@ -48,7 +48,8 @@ export function copy_text(text){
 }
 
 export function window_open(url=''){
-  if(url){ window.open(url); }
+  // if(url){ window.open(url); }
+  if(url){ location.href= url; }
 }
 export function redirect(url=''){
   if(url){ location.href= url; }

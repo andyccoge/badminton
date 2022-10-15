@@ -120,7 +120,7 @@
             <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
             <td class="border-grey-light border p-2">
               <div class="flex items-center">
-                <a class="text-blue-500" :href="'/pages/setting_date_detail.html?date='+date.id" target="_blank">
+                <a class="text-blue-500" :href="'/pages/setting_date_detail.html?date='+date.id">
                   <span v-text="date.id"></span>
                 </a>
                 <button @click="functions.copy_text(date.id)">
