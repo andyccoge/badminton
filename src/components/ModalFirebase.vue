@@ -15,9 +15,10 @@
   onMounted (() => {
     firebase.db_auth.onAuthStateChanged(async(user) => {
       if (user) {
+        db_login_modal.show = false;
         emit('sign_in_success');
       } else {
-        db_login_modal.show = true
+        db_login_modal.show = true;
         setTimeout(()=>{ 
           input_email.value.focus();
           toast.info('請先登入系統');
