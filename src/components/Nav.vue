@@ -34,7 +34,7 @@
         <div class="flex h-8 items-center justify-between">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <a href="###">
+              <a href="/">
                 <img class="h-6 w-6" src="/src/assets/img/favicon.ico" alt="羽球排場系統" />
               </a>
             </div>
