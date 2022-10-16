@@ -95,7 +95,9 @@
     <div class="court sm:aspect-video aspect-[4/4] border-2 rounded-xl relative flex flex-col justify-center"
          :class="[props.court.type==1 ? 'bg-green-500/80 hover:bg-green-600' : 'bg-yellow-500/80 hover:bg-yellow-600']"
     >
-      <img :src="court_img" class="court_img w-full h-full absolute opacity-75 z-0"/>
+      <div class="absolute w-full h-full">
+        <img :src="court_img" class="court_img w-full h-full absolute opacity-75 z-0"/>
+      </div>
       <span class="alert_dot flex h-3 w-3 mr-2 absolute" v-if="repeat_player && court.type==0">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-700 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>

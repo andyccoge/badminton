@@ -2,7 +2,7 @@
   import { ref, provide, inject, readonly, computed, watch } from 'vue';
   import * as functions from '../functions.js';
   import User from './User.vue';
-  import Draggable from "vue3-draggable";
+  import Draggable from 'vuedraggable';
   import * as Icon from '@heroicons/vue/24/outline';
 
   const users = inject('users');
@@ -157,13 +157,15 @@
         </div>
         <div class="nav_content draggable_container" v-show="user_order_type=='self'">
           <template v-if="users_show_by_self.length>0">
-            <Draggable v-model="users_show_by_self">
-              <template v-slot:item="{item}">
-                <template v-for="user in users">
-                  <template v-if="user.id == item">
-                    <User :users="users" :user="user"></User>
+            <Draggable :list="users_show_by_self" item-key="id">
+              <template #item="{element}">
+                <div>
+                  <template v-for="user in users">
+                    <template v-if="user.id == element">
+                      <User :users="users" :user="user"></User>
+                    </template>
                   </template>
-                </template>
+                </div>
               </template>
             </Draggable>
           </template>
