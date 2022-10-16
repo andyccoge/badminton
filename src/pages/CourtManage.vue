@@ -413,7 +413,7 @@
   provide('userModal_open_id', userModal_open_id);
 
   const change_user_data = (user_index, user_data) => {
-    if(refModalUserEditor.value.userModal.index==-1){
+    if(user_index==-1){
       add_show_user(user_data);
     }else{
       let user_keys = Object.keys(user_data);
@@ -484,7 +484,6 @@
     }else{
       if(chage_user.court_index==-1){ 
         toggle_menu_open_left(user_index);
-        set_user_view(user_index);
       }
       else{
         let ori_user = courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index];
@@ -540,38 +539,16 @@
   provide('grouping_users', grouping_users);
   provide('check_on_court', check_on_court);
 
-  const set_user_view  = (user_index) => {
-    user_view_index.value = user_index;
-  }
-
   // 左側人員詳細料面板-------------------------------------------------------------------------
-  let menu_open_left = ref(false);
-  const toggle_menu_open_left = (user_index=-1)=>{
-    if(user_index==-1){
-      if(menu_open_left.value){
-          menu_open_left.value = false;
-      }else{
-          menu_open_left.value = true;
-      }
-    }else{
-      menu_open_left.value = true;
-      set_user_view(user_index);
-    }
+  const refLeftmenu = ref(null);
+  const toggle_menu_open_left = async(user_index=-1)=>{
+    await refLeftmenu.value.toggle_menu_open_left(user_index);
   }
-  const toggle_menu_open_left_id = (user_id=-1) => {
-    for (let index = 0; index < users.length; index++) {
-      if(users[index].id==user_id){
-        toggle_menu_open_left(index);
-        break;
-      }
-    }
+  const toggle_menu_open_left_id = async(user_id=-1)=>{
+    await refLeftmenu.value.toggle_menu_open_left_id(user_id);
   }
-  provide('menu_open_left', readonly(menu_open_left));
   provide('toggle_menu_open_left', toggle_menu_open_left);
   provide('toggle_menu_open_left_id', toggle_menu_open_left_id);
-  
-  let user_view_index = ref(-1);
-  provide('user_view_index', user_view_index);
   const user_delete = (user_index) => {
     if (user_index < 0 && user_index > users.length) { return; }
     swal({
@@ -593,14 +570,12 @@
             })
           })
         });
-        set_user_view(-1);
-        menu_open_left.value = false;
+        toggle_menu_open_left(-1);
         await refFirebase.value.db_delete_data('game_date_users', user.date_user_id);
         users.splice(user_index, 1);
       }
     });
   }
-  provide('user_delete', user_delete);
 
   // 比賽紀錄-------------------------------------------------------------------------
   let refContestRecord = ref(null);
@@ -671,7 +646,11 @@
   <ContestRecord ref="refContestRecord"></ContestRecord>
 
   <Nav></Nav>
-  <Leftmenu></Leftmenu>
+  <Leftmenu :users="users" ref="refLeftmenu" 
+            @change_user_data="change_user_data" :need_user_date_info="true"
+            @userModal_open="userModal_open" :need_user_edit="true"
+            @user_delete="user_delete" :need_user_delete="true">
+  </Leftmenu>
 
   <main>
     <div class="bg-yellow-200 pb-6 relative">

@@ -6,7 +6,7 @@
     users: Array,
     user: Object,
   });
-  const toggle_menu_open_left = inject('toggle_menu_open_left');
+  const toggle_menu_open_left =  inject('toggle_menu_open_left');
   const users_by_teams = inject('users_by_teams') ? inject('users_by_teams') : [];
   const alert_wait = inject('alert_wait') ? inject('alert_wait') : 999;
 

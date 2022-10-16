@@ -98,6 +98,9 @@
         }
       }
     }else{
+      if(target_user.date_user_id){
+        await refFirebase.value.db_update_data('game_date_users', target_user.date_user_id, target_user);
+      }
       const update_result = await refFirebase.value.db_update_data('users', target_user.id, target_user);
       if(!update_result){ target_user = null; }
     }
@@ -156,6 +159,15 @@
       <div class="mb-2">
         信箱：<input type="email" class="form-input px-1 py-1 rounded w-full" ref="userModal_user_email"
                     v-model="userModal.user.email" @keypress.enter="user_save"/>
+      </div>
+      <div class="mb-2" v-if="userModal.user.date_user_id">
+        付款：
+        <input type="radio" id="paid_1" ref="userModal_user_paid_1" value="1" class="mr-1"
+                    v-model="userModal.user.paid"/>
+        <label for="paid_1" class="mr-4">已付清</label>
+        <input type="radio" id="paid_0" ref="userModal_user_paid_0" value="0" class="mr-1"
+                    v-model="userModal.user.paid"/>
+        <label for="paid_0">未付</label>
       </div>
     </template>
     <template #footer>

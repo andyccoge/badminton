@@ -4,6 +4,7 @@
   import Firebase from '../components/Firebase.vue';
   import ModalFirebase from '../components/ModalFirebase.vue';
   import ModalUserEditor from '../components/ModalUserEditor.vue';
+  import Leftmenu from '../components/Leftmenu.vue';
   import User from '../components/User.vue';
   import UserList from '../components/UserList.vue';
   import * as functions from '../functions.js';
@@ -175,6 +176,17 @@
       }
     });
   }
+
+  // 左側人員詳細料面板-------------------------------------------------------------------------
+  const refLeftmenu = ref(null);
+  const toggle_menu_open_left = async(user_index=-1)=>{
+    await refLeftmenu.value.toggle_menu_open_left(user_index);
+  }
+  const toggle_menu_open_left_id = async(user_id=-1)=>{
+    await refLeftmenu.value.toggle_menu_open_left_id(user_id);
+  }
+  provide('toggle_menu_open_left', toggle_menu_open_left);
+  provide('toggle_menu_open_left_id', toggle_menu_open_left_id);
 </script>
 
 <template>
@@ -207,8 +219,13 @@
         <Icon.UserPlusIcon class="h-5 w-5 text-white"></Icon.UserPlusIcon>
       </button>
     </div>
-    <UserList :users="date_users" @userModal_open="userModal_open" @user_delete="user_delete"></UserList>
+    <UserList :users="date_users" :need_user_date_info="true"
+              @userModal_open="userModal_open" @user_delete="user_delete"></UserList>
   </div>
+
+  <Leftmenu :users="users" :need_user_delete="false"
+            @userModal_open="userModal_open" ref="refLeftmenu">
+  </Leftmenu>
 </template>
 
 <style scoped> 

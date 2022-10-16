@@ -73,7 +73,7 @@
     init_data,
     get_data,
     add_record,
-  })
+  });
 </script>
 
 <template>

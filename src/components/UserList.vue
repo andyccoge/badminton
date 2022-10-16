@@ -10,6 +10,7 @@
 
   const props = defineProps({
     users: Array,
+    need_user_date_info: Boolean,
   })
   const emit = defineEmits(['userModal_open', 'user_delete']);
 </script>
@@ -28,6 +29,7 @@
           <th class="border-grey-light border p-2 sm:border-0 text-right">等級</th>
           <th class="border-grey-light border p-2 sm:border-0">電話</th>
           <th class="border-grey-light border p-2 sm:border-0">信箱</th>
+          <th class="border-grey-light border p-2 sm:border-0" v-if="props.need_user_date_info">付款</th>
           <th class="border-grey-light border p-2 sm:border-0">操作</th>
         </tr>
         <tr v-for="(user, index) in props.users"
@@ -40,6 +42,7 @@
           <th class="border-grey-light border p-2 sm:border-0 text-right">等級</th>
           <th class="border-grey-light border p-2 sm:border-0">電話</th>
           <th class="border-grey-light border p-2 sm:border-0">信箱</th>
+          <th class="border-grey-light border p-2 sm:border-0" v-if="props.need_user_date_info">付款</th>
           <th class="border-grey-light border p-2 sm:border-0">操作</th>
         </tr>
       </thead>
@@ -68,6 +71,10 @@
           <td class="border-grey-light border p-2 text-right"><span v-text="user.level"></span></td>
           <td class="border-grey-light border p-2"><span v-text="user.phone"></span></td>
           <td class="border-grey-light border p-2"><span v-text="user.email"></span></td>
+          <td class="border-grey-light border p-2" v-if="props.need_user_date_info">
+            <span class="text-green-600" v-if="user.paid==1">已付清</span>
+            <span class="text-red-600" v-else>未付</span>
+          </td>
           <td class="border-grey-light border p-1">
             <div class="sm:flex block justify-around mt-0.5">
               <button class="sm:mr-0 mr-2 rounded bg-blue-500 border-2 border-blue-700"
