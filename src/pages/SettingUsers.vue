@@ -7,6 +7,7 @@
   import NavSetting from '../components/NavSetting.vue';
   import UserList from '../components/UserList.vue';
   import * as functions from '../functions.js';
+  import * as Icon from '@heroicons/vue/24/outline';
   const toast = useToast();
   const swal = inject('$swal');
 
@@ -102,9 +103,7 @@
                      bg-yellow-500 hover:bg-yellow-400 border-yellow-700 hover:border-yellow-500" 
               @click="userModal_open(-1)">
         <span class="mr-2">單一新增</span>
-        <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-        </svg>
+        <Icon.UserPlusIcon class="h-5 w-5 text-white"></Icon.UserPlusIcon>
       </button>
     </div>
     <UserList :users="users" @userModal_open="userModal_open" @user_delete="user_delete"></UserList>

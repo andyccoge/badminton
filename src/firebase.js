@@ -5,6 +5,7 @@ import {
     query, where, orderBy, limit,
     deleteDoc,
 } from 'firebase/firestore/lite';
+import Swal from 'sweetalert2/dist/sweetalert2.js';
 
 /* 載入設定 */
 import { firebaseConfig } from '../db.config.js';
@@ -17,8 +18,20 @@ export async function db_sign_in(email, pasaword){
   await signInWithEmailAndPassword(db_auth, email, pasaword)
 };
 export function db_sign_out(redirect_url=''){
-  db_auth.signOut();
-  location.href = redirect_url ? redirect_url : "/";
+  new Swal({
+    title: '確定登出？',
+    text: "登出後將離開此頁面，部分內容將被重置",
+    icon: 'warning',
+    confirmButtonText: '確定',
+    confirmButtonColor: '#3085d6',
+    showCancelButton: true,
+    cancelButtonText: '取消',
+  }).then((result) => {
+    if (result.isConfirmed){
+      db_auth.signOut();
+      location.href = redirect_url ? redirect_url : "/";
+    }
+  });
 }
 
 export async function get_db_data(table, cond=[{'orderBy':["create_time", "desc"]}]) {
@@ -90,10 +103,15 @@ const data_with_base_column = (table, data, add_column=false) => {
 export async function add_data(table, data) {
   data = data_with_base_column(table, data, true);
   data['create_time'] = Date.now();
-  let docRef = await addDoc(collection(firebase_db, table), data);
-  let docRef_new = doc(firebase_db, table, docRef.id);
-  await updateDoc(docRef_new, {id: docRef.id});
-  return docRef.id;
+  try {
+    let docRef = await addDoc(collection(firebase_db, table), data);
+    let docRef_new = doc(firebase_db, table, docRef.id);
+    await updateDoc(docRef_new, {id: docRef.id});
+    return docRef.id;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 }
 export async function set_data(table, data) {
   let new_ids = [];
@@ -109,10 +127,18 @@ export async function set_data(table, data) {
 export async function update_data(table, id, data) {
   data = data_with_base_column(table, data, false);
   const docRef = doc(firebase_db, table, id);
-  await updateDoc(docRef, data);
+  try {
+    await updateDoc(docRef, data);
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function delete_data(table, id) {
   const docRef = doc(firebase_db, table, id);
-  await deleteDoc(docRef);
+  try {
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.log(error);
+  }
 }

@@ -7,6 +7,7 @@
   import User from '../components/User.vue';
   import UserList from '../components/UserList.vue';
   import * as functions from '../functions.js';
+  import * as Icon from '@heroicons/vue/24/outline';
   const toast = useToast();
   const swal = inject('$swal');
 
@@ -126,6 +127,7 @@
   }
 
   const select_user = async(user_index) =>{
+    if(user_index==-1){ return; }
     refFirebase.value.set_body_block_show_long(true);
     const add_result = await refFirebase.value.add_game_date_users(game_date_id.value, users[user_index].id);
     if(!add_result){ 
@@ -183,8 +185,8 @@
   <div class="p-2">
     <h4 class="">單一設定</h4>
     <div class="mb-4">
-      <template v-for="(user, user_index) in users">
-        <User :user="user" :user_index="user_index"></User>
+      <template v-for="(user) in users">
+        <User :users="users" :user="user"></User>
       </template>
     </div>
     <hr class="my-3">
@@ -202,9 +204,7 @@
                      bg-yellow-500 hover:bg-yellow-400 border-yellow-700 hover:border-yellow-500" 
               @click="userModal_open(-1)">
         <span class="mr-2">單一新增</span>
-        <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-        </svg>
+        <Icon.UserPlusIcon class="h-5 w-5 text-white"></Icon.UserPlusIcon>
       </button>
     </div>
     <UserList :users="date_users" @userModal_open="userModal_open" @user_delete="user_delete"></UserList>

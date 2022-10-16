@@ -1,4 +1,6 @@
 <script setup>
+  import * as Icon from '@heroicons/vue/24/outline';
+
   const props = defineProps({
     show: Boolean,
     click_bg_close: Boolean,
@@ -14,9 +16,7 @@
             <div class="modal-header">
               <button class="modal-default-button absolute right-0 top-0 p-1"
                       @click="$emit('close')">
-                <svg class="h-6 w-6 text-black"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+                <Icon.XCircleIcon class="h-6 w-6 text-black"></Icon.XCircleIcon>
               </button>
               <slot name="header">default header</slot>
             </div>

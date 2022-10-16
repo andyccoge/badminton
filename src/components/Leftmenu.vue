@@ -1,5 +1,6 @@
 <script setup>
   import { inject } from 'vue';
+  import * as Icon from '@heroicons/vue/24/outline';
 
   const menu_open_left = inject('menu_open_left');
   const toggle_menu_open_left = inject('toggle_menu_open_left');
@@ -15,9 +16,7 @@
     <div v-if="menu_open_left" class="modal-mask" @click.self="toggle_menu_open_left(-1)">
       <nav class="p-4" :class="[users[user_view_index].gender=='女'? 'bg-red-300' : 'bg-blue-300']">
         <button class="absolute right-0 top-0 p-1" @click="toggle_menu_open_left(-1)">
-          <svg class="h-6 w-6 text-black bg-white rounded-full"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+          <Icon.XCircleIcon class="h-6 w-6 text-black bg-white rounded-full"></Icon.XCircleIcon>
         </button>
         <div class="nav_content h-full bg-white p-4 rounded-md">
           <div class="nav_content_inner h-full">
@@ -40,13 +39,11 @@
             <div class="flex justify-between">
               <div>
                 <button class="mx-2" @click="userModal_open(user_view_index)">
-                  <svg class="h-5 w-5 text-black"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
+                  <Icon.PencilSquareIcon class="h-5 w-5 text-black"></Icon.PencilSquareIcon>
                 </button>
               </div>
               <button class="mx-2" @click="user_delete(user_view_index)">
-                <svg class="h-5 w-5 text-black"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="7" x2="20" y2="7" />  <line x1="10" y1="11" x2="10" y2="17" />  <line x1="14" y1="11" x2="14" y2="17" />  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+                <Icon.TrashIcon class="h-5 w-5 text-black"></Icon.TrashIcon>
               </button>
             </div>
           </div>

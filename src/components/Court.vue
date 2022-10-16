@@ -1,6 +1,7 @@
 <script setup>
   import { ref, inject, computed } from 'vue';
   import * as functions from '../functions.js';
+  import * as Icon from '@heroicons/vue/24/outline';
   const props = defineProps({
     court: Object,
     court_index: Number,
@@ -41,7 +42,9 @@
     for (let x = 0; x < props.court.users.length; x++) {
       for (let y = 0; y < props.court.users[x].length; y++) {
         const element = props.court.users[x][y];
-        if(element!=0){ all_player.push(element); }
+        // if(element!=''){
+          all_player.push(element);
+        // }
       }
     }
 
@@ -51,7 +54,7 @@
       for (let x = 0; x < record.users.length; x++) {
         for (let y = 0; y < record.users[x].length; y++) {
           const id = record.users[x][y];
-          if(all_player.indexOf(id)!=-1){
+          if(all_player.indexOf(id)!=-1 && id!=''){
             same_player += 1;
           }
         }
@@ -73,15 +76,14 @@
                   font-bold py-1 px-2 border-b-4 rounded-t-lg 
                   bg-red-500 hover:bg-red-400 border-red-700 hover:border-red-500">
         <button class="px-2" @click="court_eidt(props.court_index)" v-if="court.type==1">
-          <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
+          <Icon.PencilSquareIcon class="w-5 h-5 text-white"></Icon.PencilSquareIcon>
         </button>
         <button class="px-2" @click="court_delete(props.court_index)">
-          <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="7" x2="20" y2="7" />  <line x1="10" y1="11" x2="10" y2="17" />  <line x1="14" y1="11" x2="14" y2="17" />  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+          <Icon.TrashIcon class="w-5 h-5 text-white"></Icon.TrashIcon>
         </button>
         <template v-if="props.court.type==1">
           <!-- <button class="px-2" @click="court_repeat(props.court_index)">
+            <Icon.TrashIcon class="w-5 h-5 text-white"></Icon.TrashIcon>
             <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3" />  <path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3-3l3-3" />  <path d="M11 11l1 -1v4" /></svg>
           </button> -->
           <button class="px-2" @click="court_next(props.court_index)">
@@ -91,7 +93,7 @@
       </div>
     </div>
     <div class="court sm:aspect-video aspect-[4/4] border-2 rounded-xl relative flex flex-col justify-center"
-          :class="[props.court.type==1 ? 'bg-green-500/80 hover:bg-green-600' : 'bg-yellow-500/80 hover:bg-yellow-600']"
+         :class="[props.court.type==1 ? 'bg-green-500/80 hover:bg-green-600' : 'bg-yellow-500/80 hover:bg-yellow-600']"
     >
       <img :src="court_img" class="court_img w-full h-full absolute opacity-75 z-0"/>
       <span class="alert_dot flex h-3 w-3 mr-2 absolute" v-if="repeat_player && court.type==0">
@@ -112,7 +114,7 @@
             <div :class="[group_index%2==0 ? 'mr-6 ml-2' : 'ml-6 mr-2']" class="bg-white/50 px-1"
                   v-for="(user_id, user_index) in group">
               <span class="w-full inline-flex sm:flex-row flex-col sm:h-8 h-fit items-center my-2 cursor-pointer" 
-                    :class="{'bg-red-500' :chage_user.court_index==court_index && chage_user.user_group==group_index && chage_user.user_index==user_index}"
+                    :class="{'bg-red-500' : chage_user.court_index==court_index && chage_user.user_group==group_index && chage_user.user_index==user_index}"
               >
                 <span class="name_tag mh-6 font-semibold relative"
                       @click.self="court_chage_user(props.court_index, group_index, user_index)">
@@ -122,21 +124,16 @@
                   </span>
                   <span class="hidden court_user_panel absolute bg-slate-800 w-fit rounded px-1 flex-col sm:flex-row" v-if="user_id!=0">
                     <button class="py-1 mx-2" @click="toggle_menu_open_left_id(user_id)">
-                      <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                      </svg>
+                      <Icon.EyeIcon class="w-5 h-5 text-white"></Icon.EyeIcon>
                     </button>
                     <button class="py-1 mx-2" @click="userModal_open_id(user_id)">
-                      <svg class="h-5 w-5 text-white"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                      </svg>
+                      <Icon.PencilSquareIcon class="w-5 h-5 text-white"></Icon.PencilSquareIcon>
                     </button>
                   </span>
                 </span>
                 <button class="sm:ml-2 sm:mt-0 ml-0 mt-2" v-if="user_id!=0"
                         @click="court_delete_user(props.court_index, group_index, user_index)">
-                  <svg class="h-5 w-5 text-black"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <line x1="4" y1="7" x2="20" y2="7" />  <line x1="10" y1="11" x2="10" y2="17" />  <line x1="14" y1="11" x2="14" y2="17" />  <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />  <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+                  <Icon.TrashIcon class="w-5 h-5 text-black"></Icon.TrashIcon>
                 </button>
               </span>
               <div v-if="user_index+1<group.length" class="border-b-2 border-black"></div>
@@ -154,10 +151,10 @@
         <span v-text="game_time"></span>
         <template v-if="props.court.type==1">
           <button class="sm:pl-0 sm:pr-2 sm:absolute pl-4 right-0" @click="court_start(props.court_index)" v-if="!court.timer">
-            <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M18 15l-6-6l-6 6h12" transform="rotate(90 12 12)" /></svg>
+            <Icon.PlayIcon class="w-5 h-5 text-white"></Icon.PlayIcon>
           </button>
           <button class="sm:pl-0 sm:pr-2 sm:absolute pl-4 right-0" @click="court_stop(props.court_index)" v-if="court.timer">
-            <svg class="h-5 w-5 text-white"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  <rect x="6" y="4" width="4" height="16" />  <rect x="14" y="4" width="4" height="16" /></svg>
+            <Icon.PauseIcon class="w-5 h-5 text-white"></Icon.PauseIcon>
           </button>
         </template>
       </div>
@@ -174,6 +171,7 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
+    pointer-events: none;
   }
   .name_tag{
     width: -webkit-fill-available;

@@ -13,6 +13,7 @@
   import ContestRecord from '../components/ContestRecord.vue';
   import ModalPoints from '../components/ModalPoints.vue';
   import * as functions from '../functions.js';
+  import * as Icon from '@heroicons/vue/24/outline';
   const toast = useToast();
   const swal = inject('$swal');
 
@@ -63,9 +64,6 @@
     }
     
     /*取得人員資料*/
-    users.splice(0, users.length);
-    users_by_teams[0].splice(0, users_by_teams[0].length);
-    users_by_teams.splice(1, users_by_teams.length-1);
     await get_play_users();
 
     /*取得比賽資料*/
@@ -95,6 +93,7 @@
     refFirebase.value.set_body_block_show_long(false);
   }
   const get_play_users = async() => {
+    users.splice(0, users.length);
     let user_data = await refFirebase.value.get_game_date_users(game_date_id.value);
     for (let i = 0; i < user_data.length; i++) {
       add_show_user(user_data[i]);
@@ -103,7 +102,6 @@
   const add_show_user = (data) => {
     data = {...data, ...user_play_data_empty};
     users.push(data);
-    users_by_teams[0].push(data.id);
   }
 
   // 主頁場地-------------------------------------------------------------------------
@@ -162,6 +160,7 @@
     }).then(async(result) => {
       if (result.isConfirmed) {
         let court = courts[court_index];
+        if(court.timer){clearInterval(court.timer);}
         courts.splice(court_index, 1);
         court.users.forEach(users => {
           users.forEach(user_id => {
@@ -226,7 +225,7 @@
 
   const court_delete_user = (court_index, group, index) => {
     let user_id = courts[court_index].users[group][index];
-    courts[court_index].users[group][index] = "0";
+    courts[court_index].users[group][index] = '';
     user_set_status(user_id, 0, 'user_id');
   }
   provide('court_delete_user', court_delete_user);
@@ -425,7 +424,8 @@
   // 人員資料-------------------------------------------------------------------------
   const user_play_data_empty = {played:0, wait:0, status:0};
   let users = reactive([]);
-  let users_by_teams = reactive([[...users.map((user=>{return user.id}))]]);
+  let record_users_by_teams = localStorage.getItem('record_users_by_teams');
+  let users_by_teams = record_users_by_teams ?  reactive(JSON.parse(record_users_by_teams)) : reactive([]);
   const users_rest = computed(()=> { return users.filter(user => user.status==0)});
   provide('users', readonly(users));
   provide('users_by_teams', readonly(users_by_teams));
@@ -473,6 +473,7 @@
     chage_user.user_index = 0;
   }
   const select_user = (user_index) => {
+    if(user_index==-1){ return; }
     if(grouping_users_mode.value){ /* 啟用群組模式下 */
       let select_user_index = team_select_uesr_ids.value.indexOf(users[user_index].id);
       if(select_user_index==-1){
@@ -490,19 +491,16 @@
         courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index] = users[user_index].id;
         user_set_status(ori_user, 0, 'user_id');
         user_set_status(user_index, 1, 'user_index');
-        menu_open_bottom.value = false;
+        chage_user.court_index = -1;
+        // menu_open_bottom.value = false;
       }
     }
   }
   const grouping_users = () => {
-    console.log(users_by_teams);
     let group = [...team_select_uesr_ids.value];
     if(group.length==0){ toast.warning('尚未選擇群組人員');return; }
 
-    let copy = [];
-    for (let x = 0; x < users_by_teams.length; x++) {
-      copy.push([...users_by_teams[x]]);
-    }
+    let copy = JSON.parse(JSON.stringify(users_by_teams));
     for (let x = 0; x < copy.length; x++) {
       for (let y = 0; y < copy[x].length; y++) {
         if(group.indexOf(copy[x][y])!=-1){
@@ -511,21 +509,14 @@
         }
       }
     }
-    users_by_teams.push(group);
-    
-    copy = [...users_by_teams];
+    copy = JSON.parse(JSON.stringify(users_by_teams));
+    users_by_teams.splice(0, users_by_teams.length);
     for (let x = 0; x < copy.length; x++) {
-      if(x!=0){
-        if(copy[x].length==1){
-          users_by_teams[0].push(copy[x][0]);
-        }
-        if(copy[x].length<=1){  
-          let index = users_by_teams.indexOf(copy[x]);
-          users_by_teams.splice(index, 1);
-        }
-      }
+      if(copy[x].length>1){ users_by_teams.push(copy[x]); }
     }
+    if(group.length>1){ users_by_teams.push(group); }
 
+    localStorage.setItem('record_users_by_teams', JSON.stringify(users_by_teams));
     team_select_uesr_ids.value = [];
   }
   const check_on_court = (user_id, court_type=1) => {
@@ -598,7 +589,7 @@
         courts.forEach((court, court_index) => {
           court.users.forEach((group, group_index) => {
             group.forEach((user_id, court_user_index) => {
-              if(user_id==user.id){ courts[court_index].users[group_index][court_user_index] = '0'; }
+              if(user_id==user.id){ courts[court_index].users[group_index][court_user_index] = ''; }
             })
           })
         });
@@ -708,8 +699,9 @@
 
     <div class="bg-yellow-200 pt-1 pb-6 relative">
       <span class="absolute pl-3 pt-3 animate-bounce" v-if="courts_pre.length>0">
-        <svg class="h-8 w-8 text-yellow-400"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round">  <line x1="12" y1="5" x2="12" y2="19" />  <polyline points="19 12 12 19 5 12" /></svg>
+        <Icon.ArrowDownIcon class="h-8 w-8 text-yellow-400"></Icon.ArrowDownIcon>
       </span>
+
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==0"

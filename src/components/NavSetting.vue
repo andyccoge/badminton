@@ -3,8 +3,8 @@
     import { inject } from 'vue';
     import { db_sign_out } from '../firebase.js';
     import * as functions from '../functions.js';
+    import * as Icon from '@heroicons/vue/24/outline';
     import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
-    import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline';
     const show_notify = false;
     const show_head_icon = false;
     const user = {
@@ -49,14 +49,10 @@
             </div>
             <div class="flex items-center">
               <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="functions.window_open('/pages/court_manage.html')">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-v-37b9d6f7="">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" data-v-37b9d6f7=""></path>
-                </svg>
+                <Icon.Squares2X2Icon class="w-5 h-5"></Icon.Squares2X2Icon>
               </button>
               <button class="rounded-2xl p-0.5 aspect-square border-2 bg-yellow-300 border-yellow-600" @click="db_sign_out()">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                </svg>
+                <Icon.ArrowRightOnRectangleIcon class="w-5 h-5"></Icon.ArrowRightOnRectangleIcon>
               </button>
               <div class="hidden md:block" v-if="userNavigation.length>0 || show_notify">
                 <div class="flex items-center">
@@ -64,7 +60,7 @@
                           class="rounded-full ml-2 p-1 focus:outline-none focus:ring-2
                               bg-yellow-600 text-yellow-400 hover:text-white focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
                     <span class="sr-only">View notifications</span>
-                    <BellIcon class="h-4 w-4" aria-hidden="true" />
+                    <Icon.BellIcon class="h-4 w-4" aria-hidden="true" />
                   </button>
                   <!-- Profile dropdown -->
                   <Menu as="div" class="relative ml-3" v-if="userNavigation.length>0 || show_head_icon">
@@ -90,8 +86,8 @@
                 <!-- Mobile menu button -->
                 <DisclosureButton class="inline-flex items-center justify-center rounded-md bg-yellow-600 p-1 text-yellow-400 hover:bg-yellow-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
                   <span class="sr-only">Open main menu</span>
-                  <Bars3Icon v-if="!open" class="block h-4 w-4" aria-hidden="true" />
-                  <XMarkIcon v-else class="block h-4 w-4" aria-hidden="true" />
+                  <Icon.Bars3Icon v-if="!open" class="block h-4 w-4" aria-hidden="true" />
+                  <Icon.XMarkIcon v-else class="block h-4 w-4" aria-hidden="true" />
                 </DisclosureButton>
               </div>
             </div>
@@ -114,7 +110,7 @@
               <button type="button" v-if="show_notify"
                       class="ml-auto flex-shrink-0 rounded-full bg-yellow-600 p-1 text-yellow-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-yellow-600">
                 <span class="sr-only">View notifications</span>
-                <BellIcon class="h-4 w-4" aria-hidden="true" />
+                <Icon.BellIcon class="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             <div class="mt-3 space-y-1 px-2" v-if="userNavigation.length>0">

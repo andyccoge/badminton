@@ -60,6 +60,7 @@
           data.id = data_id;
         } catch (error) {
           console.log(error);
+          data = null;
         }
       }
     }
@@ -143,7 +144,6 @@
     }
     return game_date_user_data;
   }
-          
 
   defineExpose({
     set_body_block_show_long, /* 控制跨操作顯示黑屏 */
