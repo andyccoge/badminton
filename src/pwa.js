@@ -2,7 +2,7 @@
 /*初始化PWA*/
 if('serviceWorker' in navigator){
   navigator.serviceWorker
-    .register('/src/sw.js')
+    .register('/sw.js')
     .then(function(){
       console.log('Service Worker 註冊成功');
     }).catch(function(error) {

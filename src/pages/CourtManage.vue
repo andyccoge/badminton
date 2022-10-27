@@ -3,7 +3,6 @@
   import { useToast } from "vue-toastification";
   import Firebase from '../components/Firebase.vue';
   import ModalFirebase from '../components/ModalFirebase.vue';
-  import ModalAddhome from '../components/ModalAddhome.vue';
   import ModalUserEditor from '../components/ModalUserEditor.vue';
   import Nav from '../components/Nav.vue';
   import Leftmenu from '../components/Leftmenu.vue';
@@ -610,7 +609,6 @@
   <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
-  <ModalAddhome></ModalAddhome>
   <ContestRecord ref="refContestRecord"></ContestRecord>
 
   <Nav></Nav>
