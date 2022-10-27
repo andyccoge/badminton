@@ -1,9 +1,9 @@
 <script setup>
   import { ref, reactive, provide, readonly, computed, inject } from 'vue';
   import { useToast } from "vue-toastification";
-  import Modal from '../components/Modal.vue';
   import Firebase from '../components/Firebase.vue';
   import ModalFirebase from '../components/ModalFirebase.vue';
+  import ModalAddhome from '../components/ModalAddhome.vue';
   import ModalUserEditor from '../components/ModalUserEditor.vue';
   import Nav from '../components/Nav.vue';
   import Leftmenu from '../components/Leftmenu.vue';
@@ -29,7 +29,7 @@
 
     /*取得打球日資料*/
     if(game_date_id.value==''){
-      const game_date = await refFirebase.value.db_get_data('game_date');
+      const game_date = await refFirebase.value.db_get_data('game_date', [{'orderBy':['date', 'desc']}]);
       if(game_date.length==0){
         swal({
           title: '無可用的打球日',
@@ -486,6 +486,16 @@
         toggle_menu_open_left(user_index);
       }
       else{
+        let on_court = false;
+        if(courts[chage_user.court_index].type==1){
+          on_court = check_on_court(users[user_index].id);
+        }else{
+          on_court = check_on_court(users[user_index].id, 0, chage_user.court_index);
+        }
+        if(on_court){
+          toast.warning('此人已在場上，無法選擇');
+          return;
+        }
         let ori_user = courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index];
         courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index] = users[user_index].id;
         user_set_status(ori_user, 0, 'user_id');
@@ -518,15 +528,17 @@
     localStorage.setItem('record_users_by_teams', JSON.stringify(users_by_teams));
     team_select_uesr_ids.value = [];
   }
-  const check_on_court = (user_id, court_type=1) => {
+  const check_on_court = (user_id, court_type=1, court_index=-1) => {
     let on_court = false;
     for (let i = 0; i < courts.length; i++) {
-      if(courts[i].type==court_type){ /* 屬於要找的場地類型 */
-        for (let x = 0; x < courts[i].users[0].length; x++) {
-          if(courts[i].users[0][x] == user_id){ on_court=true;break; }
-        }
-        for (let x = 0; x < courts[i].users[1].length; x++) {
-          if(courts[i].users[1][x] == user_id){ on_court=true;break; }
+      if(courts[i].type==court_type){ /*屬於要找的場地類型*/
+        if(court_index==-1 || court_index==i){ /*不依場地看 或 是要檢查的場地*/
+          for (let x = 0; x < courts[i].users[0].length; x++) {
+            if(courts[i].users[0][x] == user_id){ on_court=true;break; }
+          }
+          for (let x = 0; x < courts[i].users[1].length; x++) {
+            if(courts[i].users[1][x] == user_id){ on_court=true;break; }
+          }
         }
       }
     }
@@ -590,34 +602,6 @@
       contest_record.push(refContestRecord_data.contest_record[x]);
     }
   }
-    
-
-  /*-- PWA功能 --*/
-    /*加入主畫面-------------------------------*/
-    const modal_open_add_home = ref(null);
-    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent Chrome 67 and earlier from automatically showing the prompt
-        e.preventDefault();
-        // Stash the event so it can be triggered later.
-        // Update UI to notify the user they can add to home screen
-        modal_open_add_home.value = e;
-      });
-    }
-    const do_add_home = () => {
-      if(!modal_open_add_home.value){ return; }
-      // Show the prompt
-      modal_open_add_home.value.prompt();
-      // Wait for the user to respond to the prompt
-      modal_open_add_home.value.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
-        } else {
-          console.log('User dismissed the A2HS prompt');
-        }
-        modal_open_add_home.value = null;
-      });
-    }
 </script>
 
 <template>
@@ -626,23 +610,7 @@
   <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
-
-  <!-- 加入主頁面 -->
-  <modal :show="modal_open_add_home!=null" :click_bg_close="true" @close="modal_open_add_home=null;">
-    <template #header>
-      <h3 class="font-bold text-xl">加入主畫面</h3>
-    </template>
-    <template #body>
-      <p>在手機主畫面建立捷徑，讓管理羽球場地更加輕鬆容易~</p>
-    </template>
-    <template #footer>
-      <button class="w-full font-bold py-2 px-4 border-b-4 rounded"
-              :class="'bg-yellow-500 hover:bg-yellow-400 text-white border-yellow-700 hover:border-yellow-500'"
-              @click="do_add_home">
-        建立
-      </button>
-    </template>
-  </modal>
+  <ModalAddhome></ModalAddhome>
   <ContestRecord ref="refContestRecord"></ContestRecord>
 
   <Nav></Nav>

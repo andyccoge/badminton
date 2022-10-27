@@ -6,7 +6,10 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   server: { https: true },
-  plugins: [vue(), mkcert()],
+  plugins: [
+    vue(), 
+    mkcert()
+  ],
   build: {
     rollupOptions: {
       input: {

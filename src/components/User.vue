@@ -48,8 +48,11 @@
       <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
     </span>
     <div class="flex" :class="[bottom_nav_more ? 'flex-col' : '']" @click.self="select_user(get_user_index(user.id))">
-      <span class="pr-2" v-text="show_name" @click="select_user(get_user_index(user.id))"></span>
-      <div class="flex align-center justify-between min-w-min">
+      <span class="pr-2" @click="select_user(get_user_index(user.id))">
+        <span v-text="show_name"></span>
+        (<span v-text="user.level"></span>)
+      </span>
+      <div class="flex align-center justify-between min-w-min" @click.self="select_user(get_user_index(user.id))">
         <span class="" @click="select_user(get_user_index(user.id))" v-if="bottom_nav_more">
           完賽：<span v-text="user.played"></span>
         </span>

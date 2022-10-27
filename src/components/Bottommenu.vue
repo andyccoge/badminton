@@ -20,6 +20,8 @@
       }
   }
 
+  const drag_enabled = ref(true);
+
   let bottom_nav_more = inject('bottom_nav_more') ? inject('bottom_nav_more') : ref(true);
   const toggle_bottom_nav_more =()=>{
       bottom_nav_more.value = bottom_nav_more.value ? false : true;
@@ -141,12 +143,18 @@
     <Transition>
       <div class="border-4 border-b-0 rounded-t-lg px-3 py-2 bg-white" v-show="menu_open"
           :class="[grouping_users_mode ? 'border-black' : 'border-red-700']">
-        <div v-if="bottom_nav_more">
+        <div v-if="bottom_nav_more" class="flex items-center">
           排序方式：<select class="py-0.5 mr-2" v-model="user_order_type">
             <option value="normal">一般</option>
             <option value="self">自訂</option>
             <option value="team">群組</option>
           </select>
+          <span v-if="user_order_type=='self'" class="flex mr-2">
+            <label for="default-toggle" class="inline-flex relative items-center mb-0 cursor-pointer">
+              <input type="checkbox" id="default-toggle" class="sr-only peer" v-model="drag_enabled">
+              <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
+            </label>
+          </span>
           <span v-if="user_order_type=='normal'">※依未準備、準備中、比賽中分組，各組再依完賽數由小到大排序</span>
           <span v-if="user_order_type=='self'">※如有新增、刪除人員資料，會重置排序</span>
         </div>
@@ -157,7 +165,7 @@
         </div>
         <div class="nav_content draggable_container" v-show="user_order_type=='self'">
           <template v-if="users_show_by_self.length>0">
-            <Draggable :list="users_show_by_self" item-key="id">
+            <Draggable :list="users_show_by_self" item-key="id" :disabled="!drag_enabled">
               <template #item="{element}">
                 <div>
                   <template v-for="user in users">
