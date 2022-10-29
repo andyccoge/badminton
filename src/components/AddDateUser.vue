@@ -50,8 +50,15 @@
   const add_users = async() => {
     refFirebase.value.set_body_block_show_long(true);
     let data = users_input_data.value;
-    data = data.split(',');
+    data = data.split("\n");
+    data = data.map((item)=>{ 
+      item = item.split("."); 
+      item = item.length>1 ? item.slice(1) : item;
+      item = item.join(".").trim();
+      return item;
+    });
     data = data.filter((item)=>{ return item.trim() });
+    // console.log(data);return;
     if(data.length==0){ 
       refFirebase.value.set_body_block_show_long(false);
       toast.warning('請輸入員名稱');return;
@@ -202,8 +209,10 @@
       </template>
     </div>
     <hr class="my-3">
-    <h4 class="">批次設定人員(請輸入人名並以英文逗點分隔，人名間的空白及換行不會影響程式運作)</h4>
-    <textarea class="w-full" rows="2" v-model="users_input_data" placeholder="陳XX, 王OO"></textarea>
+    <h4 class="">批次設定人員(請輸入人名並以「換行」分隔，人名會省略第一個點(.)之前的文字及前後多於空白</h4>
+    <textarea class="w-full" rows="2" v-model="users_input_data" 
+placeholder="1.陳XX
+王OO"></textarea>
     <p class="text-red-600">※此處會檢查姓名是否已存在資料庫，不存在則新增，存在則直接套用</p>
     <button @click="add_users"
             class="w-full font-bold py-1 px-4 border-b-4 rounded

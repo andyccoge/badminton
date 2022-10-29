@@ -38,8 +38,15 @@
   const add_users = async() => {
     let new_data = [];
     let data = users_input_data.value;
-    data = data.split(',');
+    data = data.split("\n");
+    data = data.map((item)=>{ 
+      item = item.split("."); 
+      item = item.length>1 ? item.slice(1) : item;
+      item = item.join(".").trim();
+      return item;
+    });
     data = data.filter((item)=>{ return item.trim() });
+    // console.log(data);return;
     if(data.length==0){ toast.warning('請輸入員名稱');return; }
 
     for (let i = 0; i < data.length; i++) {
@@ -89,8 +96,10 @@
 
   <div class="p-2">
     <h1 class="text-xl font-bold">人員列表</h1>
-    <h3 class="">批次新增人員(請輸入人名並以英文逗點分隔，人名間的空白及換行不會影響程式運作)</h3>
-    <textarea class="w-full" rows="2" v-model="users_input_data" placeholder="陳XX, 王OO"></textarea>
+    <h3 class="">批次新增人員(請輸入人名並以「換行」分隔，人名會省略第一個點(.)之前的文字及前後多於空白</h3>
+    <textarea class="w-full" rows="2" v-model="users_input_data" 
+placeholder="1.陳XX
+王OO"></textarea>
     <p class="text-red-600">※此處新增不會檢查資料庫是否重複，因為姓名可重複</p>
     <button @click="add_users"
             class="w-full font-bold py-1 px-4 border-b-4 rounded
