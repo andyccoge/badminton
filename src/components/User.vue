@@ -48,8 +48,8 @@
       <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
     </span>
     <div class="flex" :class="[bottom_nav_more ? 'flex-col' : '']" @click.self="select_user(get_user_index(user.id))">
-      <span class="pr-2" @click="select_user(get_user_index(user.id))">
-        <span v-text="show_name"></span>
+      <span class="inline-flex" @click="select_user(get_user_index(user.id))">
+        <span v-text="show_name" class="line-clamp-1" style="max-width: 65px;"></span>
         (<span v-text="user.level"></span>)
       </span>
       <div class="flex align-center justify-between min-w-min" @click.self="select_user(get_user_index(user.id))">

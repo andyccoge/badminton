@@ -98,6 +98,11 @@
       add_show_user(user_data[i]);
     }
   }
+  const renew_users = async() => {
+    refFirebase.value.set_body_block_show_long(true);
+    await get_play_users();
+    refFirebase.value.set_body_block_show_long(false);
+  }
   const add_show_user = (data) => {
     data = {...data, ...user_play_data_empty};
     users.push(data);
@@ -665,7 +670,7 @@
     </div>
   </main>
 
-  <Bottommenu ref="refBottommenu"></Bottommenu>
+  <Bottommenu ref="refBottommenu" @renew_users="renew_users"></Bottommenu>
 </template>
 
 <style scoped>

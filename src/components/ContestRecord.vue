@@ -8,7 +8,7 @@
   import * as functions from '../functions.js';
   import * as Icon from '@heroicons/vue/24/outline';
   // const toast = useToast();
-  // const swal = inject('$swal');
+  const swal = inject('$swal');
 
   const game_date_id = inject('game_date_id');
 
@@ -52,6 +52,25 @@
     contest_record[court_index].game_points = points;
   }
 
+  const record_delete = (index) => {
+    if (index < 0 && index > dates.length) { return; }
+    swal({
+      title: '確定刪除此比賽紀錄？',
+      text: "",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '確定',
+      confirmButtonColor: '#3085d6',
+      cancelButtonText: '取消',
+      cancelButtonColor: '#d33',
+    }).then(async(result) => {
+      if (result.isConfirmed) {
+        await refFirebase.value.db_delete_data('game_records', contest_record[index].id)
+        contest_record.splice(index, 1);
+      }
+    });
+  }
+
   // 外部操作-------------------------------------------------------------------------
   const get_data = () => {
     return {'users':users, 'contest_record':contest_record};
@@ -79,7 +98,6 @@
 <template>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
-
   <!-- 比賽紀錄 -->
   <modal :show="modal_open" :click_bg_close="false" @close="modal_open=false">
     <template #header>
@@ -101,6 +119,7 @@
               <th class="border-grey-light border p-2 sm:border-0">比數</th>
               <th class="border-grey-light border p-2 sm:border-0">隊伍2</th>
               <th class="border-grey-light border p-2 sm:border-0 text-right">時間</th>
+              <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">操作</span></th>
             </tr>
             <tr v-for="(record, index) in contest_record"
                 class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
@@ -109,6 +128,7 @@
               <th class="border-grey-light border p-2 sm:border-0">比數</th>
               <th class="border-grey-light border p-2 sm:border-0">隊伍2</th>
               <th class="border-grey-light border p-2 sm:border-0 text-right">時間</th>
+              <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">操作</span></th>
             </tr>
           </thead>
           <tbody class="flex-1 sm:flex-none">
@@ -131,6 +151,18 @@
                 <span v-text="functions.get_user_name(users, record.users[1][1])"></span>
               </td>
               <td class="border-grey-light border p-2 text-right"><span v-text="game_time(record.time)"></span></td>
+              <td class="border-grey-light border p-1">
+                <div class="sm:flex block justify-around mt-0.5 flex-wrap">
+                  <button class="sm:mr-0 mr-2 rounded bg-blue-500 border-2 border-blue-700"
+                          @click="open_modal_poists(index)">
+                    <Icon.PencilSquareIcon class="h-5 w-5 text-white"></Icon.PencilSquareIcon>
+                  </button>
+                  <button class="sm:mr-0 mr-2  rounded bg-red-500 border-2 border-red-700"
+                          @click="record_delete(index)">
+                    <Icon.TrashIcon class="h-5 w-5 text-white"></Icon.TrashIcon>
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -140,7 +172,6 @@
       <div class="text-right">(新比賽顯示於最上方)</div>
     </template>
   </modal>
-
   <ModalPoints @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
 </template>
 

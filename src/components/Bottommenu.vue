@@ -8,6 +8,8 @@
   const users = inject('users');
   const courts = inject('courts');
 
+  const emit = defineEmits(['renew_users']);
+
   const court_chage_user_reset = inject('court_chage_user_reset');
   let menu_open = inject('menu_open_bottom') ? inject('menu_open_bottom') : ref(false);
   const toggle_menu_open =()=>{
@@ -119,7 +121,12 @@
         <button class="w-full font-bold py-2 px-4 border-b-4 rounded-t-lg text-white relative"
                 :class="[grouping_users_mode ? 'bg-black hover:bg-black  border-black hover:border-black' : 'bg-red-500 hover:bg-red-400  border-red-700']"
                 @click.self="toggle_menu_open">
-          人員面板
+          <span class="inline-flex items-center" @click.self="toggle_menu_open">
+            人員面板
+            <button class="ml-3" @click="emit('renew_users');">
+              <Icon.ArrowPathIcon class="h-5 w-5 text-white"></Icon.ArrowPathIcon>
+            </button>
+          </span>
           <span v-if="grouping_users_mode">(群組模式)</span>
           <span class="absolute left-2">
             <button class="" v-if="!bottom_nav_more" @click="toggle_bottom_nav_more">
@@ -155,8 +162,10 @@
               <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-red-300 dark:peer-focus:ring-red-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
             </label>
           </span>
-          <span v-if="user_order_type=='normal'">※依未準備、準備中、比賽中分組，各組再依完賽數由小到大排序</span>
-          <span v-if="user_order_type=='self'">※如有新增、刪除人員資料，會重置排序</span>
+          <!-- 
+            <span v-if="user_order_type=='normal'">※依未準備、準備中、比賽中分組，各組再依完賽數由小到大排序</span>
+            <span v-if="user_order_type=='self'">※如有新增、刪除人員資料，會重置排序</span>
+          -->
         </div>
         <div class="nav_content" v-show="user_order_type=='normal'">
           <template v-for="user in users_show_by_normal">
@@ -185,9 +194,11 @@
         </div>
         <div class="grid lg:grid-cols-2 md:grid-cols-1" v-if="!grouping_users_mode && bottom_nav_more">
           <div>
+            <!-- 
             ※透明表示目前正在場上，但仍可安排上場<br>
             ※黃框表示有排上預備場<br>
             ※點擊場地人員區塊即可開始指派人員
+            -->
           </div>
           <div class="flex items-end justify-end">
             等候場數提示：<input type="number" class="form-input px-1 py-1 rounded" min="0" v-model="alert_wait"/>

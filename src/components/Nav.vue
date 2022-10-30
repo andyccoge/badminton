@@ -1,7 +1,8 @@
 <!-- This example requires Tailwind CSS v2.0+ -->
 <script setup>
-  import { inject } from 'vue';
+  import { ref, inject } from 'vue';
   import { db_sign_out } from '../firebase.js';
+  import Modal from '../components/Modal.vue';
   import * as Icon from '@heroicons/vue/24/outline';
   import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
   const show_notify = false;
@@ -25,6 +26,7 @@
   ];
 
   let modal_open_contest_record = inject('modal_open_contest_record');
+  const modal_open_question = ref(false); 
 </script>
 
 <template>
@@ -45,6 +47,9 @@
             </div>
           </div>
           <div class="flex items-center">
+            <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_question=true">
+              <Icon.QuestionMarkCircleIcon class="w-5 h-5"></Icon.QuestionMarkCircleIcon>
+            </button>
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_contest_record=true">
               <Icon.TableCellsIcon class="w-5 h-5"></Icon.TableCellsIcon>
             </button>
@@ -118,16 +123,99 @@
     </Disclosure>
   </div>
   <div class="nav_blank"></div>
+
+  <!-- 操作說明 -->
+  <modal :show="modal_open_question" :click_bg_close="true" @close="modal_open_question=false">
+    <template #header>
+      <h3 class="font-bold text-xl flex items-center">
+        操作說明
+      </h3>
+    </template>
+    <template #body>
+      <ul style="list-style: cjk-ideographic;">
+        <li class="mb-2">
+          場地：<br>
+          <ul>
+            <li>
+              比賽場(綠色)：<br>
+              有兩排控制按鈕,上方由左到右各別是「編輯場地名稱」、「刪除場地」(該球員會被設為閒置)、「換下一場」(會從預備場拉人上來)；下方則為「比賽時間」、「開始計時」。<br>
+              目前做成場地需先「開始計時」才能「換下一場」，而換下一場後會自動開始計時。
+            </li>
+            <li>
+              預備場(黃色)：<br>
+              可設定多組人等候上場，預備人員可跟其他預備場及比賽場人員重複，但換場時會判斷人員是否都閒置中，是的話才安排上場，因此所以可多多利用，由系統自動調度人員。<br>
+              另外，預備場上的人員如果有3人以上跟比賽紀錄的人員組合重複，場地右上角會有發光藍點提示。
+            </li>
+            <li>
+              人員安排方法：<br>
+              點擊場地兩側白色區塊，系統會將選擇的位置標記紅色(進入「排人模式」)，並打開人員面板，此時再選擇面板中的人員即可安排上場。<br>
+              如要替換人員，操作方式同上。<br>
+              如要移除已排定的人員，點擊該人員後的垃圾桶即可。<br>
+              安排「比賽場」人員時會有防呆，不允許同一人同時在多個比賽場，但預備場則無此限制。
+            </li>
+          </ul>
+        </li>
+        <li class="mb-2">
+          人員面板：<br>
+          點擊人員面板即可開啟/關閉它，裡面包含該打球日所有的球員，並會依在場地上的狀態有不同顯示，如果有上比賽場會變為透明，如果有上預備場會發黃光。<br>
+          人員面板上有一排控制按鈕，由左到右是「切換顯示內容多寡」、「重新載入人員」、「切換群組人員模式」、「添加人員」，各別功能說明如下：
+          <ul>
+            <li>
+              顯示內容：<br>
+              預設為多，會顯示「排序設定」、「各人員完賽數」、「等候提示場數輸入區」，其中排序分為三種：
+              <ul>
+                <li>一般：依未準備、準備中、比賽中分批先後顯示，各批再依完賽數由小到大排序。</li>
+                <li>自訂：可行拖拉排序，但有新增、刪除人員時，會重置。另外在此排序下若想選擇人員上場，請「關閉」拖拉功能(開關在下拉選右側)，否則可能無法操作。</li>
+                <li>群組；有組別的排在前面。</li>
+              </ul>
+              等候提示場數輸入區可輸入數字，當人員等候場數大於設定的數字時，人員右上方將有發光紅點標記。
+            </li>
+            <li>
+              群組人員模式：<br>
+              此模式下可對人員進行標記，主要用於註記有一起上場需求的人，使用方式如下：
+              <ul>
+                <li>先入群組人員模式(人員面板會變為黑色)，然後點擊全部想群組的人，再點建成群組就會標上組別。</li>
+                <li>如果希望刪除群組，則一次只選一人建成群組，慢慢就會被移除。</li>
+                <li>關閉面板或再點一次「切換群組人員模式」就會離開群駔人員模式。</li>
+              </ul>             
+            </li>
+            <li>添加人員會比對姓名是否重複(同打球日詳細內容設定人員的單一新增)。</li>
+          </ul>
+          各人員有小眼睛，點擊可打開「人員詳細資料」，其中可查看詳細內容外，也可設定是否繳費、資料編輯等。另外有兩種方式也可開啟「人員詳細資料」：
+          <ul>
+            <li>在非「排人模式」、非「群組人員模式」下點擊人員。</li>
+            <li>長按場地上人員姓名，下方會顯示黑色操作選單，點擊小眼睛即可。</li>
+          </ul>
+        </li>
+        <li class="mb-2">
+          比賽紀錄：<br>
+          當比賽場換下一場時，會產生比賽紀錄，可於上方選單右側「表格」按鈕點擊看到，點擊比數超連結可對其進行修改。
+        </li>
+      </ul>
+    </template>
+    <template #footer>
+      <div></div>
+    </template>
+  </modal>
 </template>
 
 <style scoped>
-    nav{
-        width: 100%;
-        top: 0;
-        position: fixed;
-        z-index: 15;
-    }
-    .nav_blank{
-      padding-top: var(--nav_h);
-    }
+  ol{
+    list-style: auto;
+  }
+  ul{
+    list-style: disc;
+  }
+  ol,ul{
+    padding: revert;
+  }
+  nav{
+      width: 100%;
+      top: 0;
+      position: fixed;
+      z-index: 15;
+  }
+  .nav_blank{
+    padding-top: var(--nav_h);
+  }
 </style>
