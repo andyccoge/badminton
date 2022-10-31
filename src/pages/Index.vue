@@ -1,11 +1,9 @@
 <script setup>
   import ModalAddhome from '../components/ModalAddhome.vue';
-  import GoogleTextToSpeech from '../components/GoogleTextToSpeech.vue';
 </script>
 
 <template>
   <ModalAddhome></ModalAddhome>
-  <GoogleTextToSpeech></GoogleTextToSpeech>
   <div class="h-screen flex flex-col items-center justify-center">
     <h1 class="font-bold mb-5 text-3xl sm:text-5xl text-center">羽球排場系統</h1>
     <div class="w-full grid sm:grid-cols-2 grid-cols-1 mb-20 sm:px-4 px-0">

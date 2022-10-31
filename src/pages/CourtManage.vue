@@ -13,8 +13,10 @@
   import ModalPoints from '../components/ModalPoints.vue';
   import * as functions from '../functions.js';
   import * as Icon from '@heroicons/vue/24/outline';
+  import GoogleTextToSpeech from '../components/GoogleTextToSpeech.vue';
   const toast = useToast();
   const swal = inject('$swal');
+  const refGoogleTextToSpeech = ref(null);
 
   let game_date_id = ref(functions.get_href_attr('date'));
   game_date_id.value = game_date_id.value ? game_date_id.value : "";
@@ -609,6 +611,7 @@
 </script>
 
 <template>
+  <GoogleTextToSpeech ref="refGoogleTextToSpeech"></GoogleTextToSpeech>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
   <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
