@@ -35,3 +35,5 @@ else if(db_connect=='badminton-courts6-qttybe'){
   firebaseConfig = {
   };
 }
+
+export const google_text_to_speech_url = '/php/google_text_to_speech.php';
