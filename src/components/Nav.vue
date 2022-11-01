@@ -26,6 +26,8 @@
   ];
 
   let modal_open_contest_record = inject('modal_open_contest_record');
+  const toggle_use_sound = inject('toggle_use_sound') ? inject('toggle_use_sound') : ()=>{};
+  const get_use_sound = inject('get_use_sound') ? inject('get_use_sound') : ()=>{return 'false'};
   const modal_open_question = ref(false); 
 </script>
 
@@ -49,6 +51,10 @@
           <div class="flex items-center">
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_question=true">
               <Icon.QuestionMarkCircleIcon class="w-5 h-5"></Icon.QuestionMarkCircleIcon>
+            </button>
+            <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="toggle_use_sound">
+              <Icon.SpeakerWaveIcon class="w-5 h-5" v-if="get_use_sound()=='true'"></Icon.SpeakerWaveIcon>
+              <Icon.SpeakerXMarkIcon class="w-5 h-5" v-if="get_use_sound()!='true'"></Icon.SpeakerXMarkIcon>
             </button>
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_contest_record=true">
               <Icon.TableCellsIcon class="w-5 h-5"></Icon.TableCellsIcon>

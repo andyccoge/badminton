@@ -12,6 +12,14 @@
   const game_date_id = inject('game_date_id');
 
   const emit = defineEmits(['change_court_data']);
+  const court_delete = inject('court_delete') ? inject('court_delete') : ()=>{};
+  const court_delete_editor = async() => {
+    const result = await court_delete(courtModal.index);
+    if(result.isConfirmed){
+      courtModal.show = false;
+      reset_courtModal();
+    }
+  }
 
   const court_name = ref(null);
   let courts = inject('courts');
@@ -91,6 +99,12 @@
                       ]"
               @click="add_court">
         確認儲存
+      </button>
+      <button class="w-full font-bold py-2 px-4 border-b-4 rounded mt-2
+                     bg-red-500 hover:bg-red-400 text-white border-red-700 hover:border-red-500"
+              v-if="courtModal.index!=-1"
+              @click="court_delete_editor">
+        刪除
       </button>
     </template>
   </modal>

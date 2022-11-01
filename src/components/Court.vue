@@ -1,13 +1,18 @@
 <script setup>
   import { ref, inject, computed } from 'vue';
+  import { useToast } from "vue-toastification";
   import * as functions from '../functions.js';
   import * as Icon from '@heroicons/vue/24/outline';
+  const toast = useToast();
   const props = defineProps({
     court: Object,
     court_index: Number,
   });
+  const emit = defineEmits(['court_users_to_speech']);
   const court_img = ref('/src/assets/img/badminton_court_e.png');
   // const court_img = ref('/src/assets/img/badminton_court_v_e.png');
+
+  const get_use_sound = inject('get_use_sound') ? inject('get_use_sound') : ()=>{return 'false'};
   
   const users = inject('users');
   const court_eidt = inject('court_eidt');
@@ -16,6 +21,11 @@
   const court_stop = inject('court_stop');
   const court_repeat = inject('court_repeat');
   const court_next = inject('court_next'); 
+  const check_court_empty = inject('check_court_empty') ? inject('check_court_empty') : ()=>{return true;}; 
+
+  const court_users_to_speech = async() => {
+    emit('court_users_to_speech', props.court_index);
+  }
   
   const chage_user = inject('chage_user');
   const court_chage_user = inject('court_chage_user');
@@ -78,10 +88,13 @@
         <button class="px-2" @click="court_eidt(props.court_index)" v-if="court.type==1">
           <Icon.PencilSquareIcon class="w-5 h-5 text-white"></Icon.PencilSquareIcon>
         </button>
-        <button class="px-2" @click="court_delete(props.court_index)">
+        <button class="px-2" @click="court_delete(props.court_index)" v-if="court.type==0 || get_use_sound()!='true'">
           <Icon.TrashIcon class="w-5 h-5 text-white"></Icon.TrashIcon>
         </button>
         <template v-if="props.court.type==1">
+          <button class="px-2" @click="court_users_to_speech()" v-if="get_use_sound()=='true'">
+            <Icon.SpeakerWaveIcon class="w-5 h-5 text-white"></Icon.SpeakerWaveIcon>
+          </button>
           <!-- <button class="px-2" @click="court_repeat(props.court_index)">
             <Icon.TrashIcon class="w-5 h-5 text-white"></Icon.TrashIcon>
             <svg class="h-5 w-5 text-white"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3" />  <path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3-3l3-3" />  <path d="M11 11l1 -1v4" /></svg>

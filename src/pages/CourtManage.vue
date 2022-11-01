@@ -16,7 +16,16 @@
   import GoogleTextToSpeech from '../components/GoogleTextToSpeech.vue';
   const toast = useToast();
   const swal = inject('$swal');
+
   const refGoogleTextToSpeech = ref(null);
+  const toggle_use_sound = () => {
+    refGoogleTextToSpeech.value.toggle_use_sound();
+  }
+  const get_use_sound = () => {
+    return refGoogleTextToSpeech.value.use_sound;
+  }
+  provide('toggle_use_sound', toggle_use_sound);
+  provide('get_use_sound', get_use_sound);
 
   let game_date_id = ref(functions.get_href_attr('date'));
   game_date_id.value = game_date_id.value ? game_date_id.value : "";
@@ -152,18 +161,19 @@
     refCourtEditor.value.courtModal_add(num);
   }
 
-  const court_delete = (court_index) => {
+  const court_delete = async(court_index) => {
     if (court_index < 0 && court_index > courts.length) { return; }
-    swal({
-      title: '確定刪除場地？',
-      text: "刪除後會自動更新場上人員狀態",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: '確定',
-      confirmButtonColor: '#3085d6',
-      cancelButtonText: '取消',
-      cancelButtonColor: '#d33',
-    }).then(async(result) => {
+    try {
+      const result = await swal({
+        title: '確定刪除場地？',
+        text: "刪除後會自動更新場上人員狀態",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '確定',
+        confirmButtonColor: '#3085d6',
+        cancelButtonText: '取消',
+        cancelButtonColor: '#d33',
+      });
       if (result.isConfirmed) {
         let court = courts[court_index];
         if(court.timer){clearInterval(court.timer);}
@@ -175,7 +185,10 @@
         });
         await refFirebase.value.db_delete_data('game_date_courts', court.id);
       }
-    });
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
   }
   const court_start = (court_index) => {
     if(check_court_empty(court_index)){
@@ -305,7 +318,16 @@
         toast.warning("目前已無預備人員，或預備人員正在場上");
     }else{
       toast.success(courts[finish_index].name + " 已換下一場");
+      court_users_to_speech(finish_index);
     }
+  }
+  /* 給場地component呼叫的場地人員語音 */
+  const court_users_to_speech = (court_index) => {
+    if(check_court_empty(court_index)){
+      toast.warning("此場地尚未安排人員");
+      return;
+    }
+    refGoogleTextToSpeech.value.court_users_to_speech(users, courts[court_index]);
   }
   const court_change = (court_index) => {  
     /* 設定場上人員下場 */
@@ -387,6 +409,7 @@
     }
     return court_is_empty;
   }
+  provide('check_court_empty', check_court_empty);
   const copy_court = (target_court) => {
     let copy = JSON.parse(JSON.stringify(target_court));
     return copy;
@@ -488,7 +511,7 @@
         team_select_uesr_ids.value.splice(select_user_index, 1);
       }
     }else{
-      if(chage_user.court_index==-1){ 
+      if(chage_user.court_index==-1){  /* 開啟左側人員詳細資料 */
         toggle_menu_open_left(user_index);
       }
       else{
@@ -506,7 +529,22 @@
         courts[chage_user.court_index].users[chage_user.user_group][chage_user.user_index] = users[user_index].id;
         user_set_status(ori_user, 0, 'user_id');
         user_set_status(user_index, 1, 'user_index');
+        const ori_court_index = chage_user.court_index;
         chage_user.court_index = -1;
+        console.log(courts[ori_court_index]);
+        for (let x = 0; x < courts[ori_court_index].users.length; x++) {
+          const element = courts[ori_court_index].users[x];
+          for (let y = 0; y < element.length; y++) {
+            const element2 = element[y];
+            if(element2=='' && chage_user.court_index==-1){
+              chage_user.court_index = ori_court_index;
+              chage_user.user_group = x;
+              chage_user.user_index = y;
+              break;
+            }
+          }
+        }
+        
         // menu_open_bottom.value = false;
       }
     }
@@ -637,6 +675,7 @@
           <Court v-if="court.type==1"
                 :court="court"
                 :court_index="court_index"
+                @court_users_to_speech="court_users_to_speech"
           ></Court>
         </template>
       </div>
