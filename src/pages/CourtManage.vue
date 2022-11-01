@@ -22,7 +22,8 @@
     refGoogleTextToSpeech.value.toggle_use_sound();
   }
   const get_use_sound = () => {
-    return refGoogleTextToSpeech.value.use_sound;
+    const use_sound = refGoogleTextToSpeech.value ? refGoogleTextToSpeech.value.use_sound : 'false';
+    return use_sound;
   }
   provide('toggle_use_sound', toggle_use_sound);
   provide('get_use_sound', get_use_sound);

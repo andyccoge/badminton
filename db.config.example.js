@@ -36,4 +36,4 @@ else if(db_connect=='badminton-courts6-qttybe'){
   };
 }
 
-export const google_text_to_speech_url = '/php/google_text_to_speech.php';
+export const google_text_to_speech_url = 'http://google_api.test/google/google/google_text_to_speech';

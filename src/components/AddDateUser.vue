@@ -83,9 +83,14 @@
           for (let x = 0; x < repeat_users.length; x++) {
             const repeat = repeat_users[x];
             const gender_class = repeat.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400';
-            button_html += '<button class="btn user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'">'+ 
+            button_html += '<button class="btn inline-flex user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'">'+ 
                               repeat.name + 
-                              '('+ (repeat.nick ? repeat.nick+' ': '') + functions.stamp_to_time(repeat.create_time) +')\
+                              '<span class="eye ml-3" user_id="'+ repeat.id +'" class="ml-3">\
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">\
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />\
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />\
+                                </svg>\
+                              </span>\
                             </button>';
           }
           await swal({
@@ -97,10 +102,21 @@
             showCancelButton: true,
             cancelButtonText: '跳過',
             didOpen: () => {
+              document.querySelectorAll('button.user .eye').forEach(element => {
+                element.addEventListener('click', (e) => {
+                  const user_id = element.getAttribute('user_id');
+                  toggle_menu_open_left_id(user_id);
+                  setTimeout(()=>{
+                    let class_text = document.querySelector('.left_menu').getAttribute('class') + ' very_front ';
+                    document.querySelector('.left_menu').setAttribute('class', class_text);
+                  }, 100);
+                });
+              });
               document.querySelectorAll('button.user').forEach(element => {
                 element.addEventListener('click', async(e) => {
+                  if(e.target != e.currentTarget){ return; }
                   refFirebase.value.set_body_block_show_top(true);
-                  let index = element.getAttribute('index');
+                  const index = element.getAttribute('index');
                   if(index=='強制建立'){
                     target_user = await refFirebase.value.db_add_data('users', target_user);
                   }else{
@@ -112,6 +128,9 @@
               });
             }
           });
+          let class_text = document.querySelector('.left_menu').getAttribute('class');
+          class_text = class_text.replaceAll('very_front', '');
+          document.querySelector('.left_menu').setAttribute('class', class_text);
           if(target_user){ user_id = target_user.id; }
         }
         if(user_id){

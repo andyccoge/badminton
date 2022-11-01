@@ -53,9 +53,10 @@
   <Firebase ref="refFirebase"></Firebase>
 
   <Transition>
-    <div v-if="menu_open_left && props.users.length>user_view_index && user_view_index>=0" 
-         class="modal-mask" @click.self="toggle_menu_open_left(-1)">
-      <nav class="p-4" :class="[props.users[user_view_index].gender=='女'? 'bg-red-300' : 'bg-blue-300']">
+    <div v-show="menu_open_left && props.users.length>user_view_index && user_view_index>=0" 
+         class="modal-mask left_menu" @click.self="toggle_menu_open_left(-1)">
+      <nav v-if="menu_open_left && props.users.length>user_view_index && user_view_index>=0"
+           class="p-4" :class="[props.users[user_view_index].gender=='女'? 'bg-red-300' : 'bg-blue-300']">
         <button class="absolute right-0 top-0 p-1" @click="toggle_menu_open_left(-1)">
           <Icon.XCircleIcon class="h-6 w-6 text-black bg-white rounded-full"></Icon.XCircleIcon>
         </button>
@@ -108,6 +109,10 @@
 </template>
 
 <style scoped>
+  .modal-mask.very_front{
+    z-index: 99999;
+  }
+
   nav{
     position: fixed;
     width: 60%;
