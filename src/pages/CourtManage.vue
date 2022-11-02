@@ -73,9 +73,6 @@
       }
       game_date_data.value = game_date[0];
     }
-    
-    /*取得人員資料*/
-    await get_play_users();
 
     /*取得比賽資料*/
     await refContestRecord.value.init_data();
@@ -90,10 +87,8 @@
     // console.log(courts);
     refBottommenu.value.init_alert_wait();
 
-    /* 更新人員狀態 */
-    users.forEach((user, index) => {
-      user_set_status(index, 1, 'user_index');
-    });
+    /*取得人員資料*/
+    await get_play_users();
 
     /*避免重整*/
     window.onbeforeunload=function(e){
@@ -109,6 +104,10 @@
     for (let i = 0; i < user_data.length; i++) {
       add_show_user(user_data[i]);
     }
+    /* 更新人員狀態 */
+    users.forEach((user, index) => {
+      user_set_status(index, 1, 'user_index');
+    });
   }
   const renew_users = async() => {
     refFirebase.value.set_body_block_show_long(true);
