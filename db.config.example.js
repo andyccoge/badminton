@@ -1,5 +1,5 @@
 const location_href = location.href;
-let db_connect = location_href.split('//')[1];
+export let db_connect = location_href.split('//')[1];
 db_connect = db_connect.split('.')[0];
 // alert(db_connect);
 

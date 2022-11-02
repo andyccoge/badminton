@@ -3,7 +3,7 @@
   import { useToast } from "vue-toastification";
   import * as functions from '../functions.js';
   /* 載入設定 */
-  import { google_text_to_speech_url } from '../../db.config.js';
+  import { db_connect, google_text_to_speech_url } from '../../db.config.js';
   import axios from 'axios';
   const toast = useToast();
 
@@ -42,6 +42,7 @@
     if(audio_text.value!=text){
       var bodyFormData = new FormData();
       bodyFormData.append('text', text);
+      bodyFormData.append('domain', db_connect);
       try {
         let resp = await axios({
           method: 'post',
