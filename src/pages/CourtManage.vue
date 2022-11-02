@@ -306,7 +306,16 @@
       has_next_game = true;
     }
     else{ /* 換下一場 */
+      // console.log(finish_index);
+      const finish_id = courts[finish_index].id;
       has_next_game = court_change(finish_index); /* 檢查是否有下一場比賽 */
+      for (let x = 0; x < courts.length; x++) { /* 換場會更換array順序，故重抓結束場的index */
+        if(finish_id==courts[x].id){
+          finish_index = x;
+          break;
+        }
+      }
+      // console.log(finish_index);
     }
       
     change_user_calculate(finish_index); /* 更新人員比賽統計 */

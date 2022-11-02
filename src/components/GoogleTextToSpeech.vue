@@ -26,19 +26,18 @@
         text += functions.get_user_name(users, user_id) + '，'
       });
     });
-    text += '上' + court.name;
+    text += '上場地：' + court.name;
     // console.log(text);
     text_to_speech(text);
   }
 
   const text_to_speech = async(text) => {
     if(use_sound.value!='true'){ return; }
-    console.log(text);
+    // console.log(text);
     if(!text){
       toast.warning("請提供語音內容");
       return;
     }
-    console.log(audio_text.value!=text);
     if(audio_text.value!=text){
       var bodyFormData = new FormData();
       bodyFormData.append('text', text);
@@ -50,7 +49,7 @@
           data: bodyFormData,
           headers: { "Content-Type": "multipart/form-data" },
         });
-        console.log(resp.data);
+        // console.log(resp.data);
         if(resp.data.code){
           audio_text.value = text;
           audio_url.value = resp.data.msg;
