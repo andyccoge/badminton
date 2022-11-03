@@ -159,7 +159,7 @@
     </div>
     <div class="w-full flex align-center justify-center relative" v-if="props.court.type==1">
       <div class="flex relative items-center justify-around py-1 sm:px-4 px-4 pr-1 bg-slate-800 text-white min-w-[50%] rounded-b">
-        <span class="alert_dot flex h-3 w-3 absolute" v-if="props.court.time <= 10 || !court.timer">
+        <span class="alert_dot flex h-3 w-3 absolute" v-if="props.court.time == 0">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-700 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
         </span>
