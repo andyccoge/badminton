@@ -213,9 +213,15 @@
     if(courts[court_index].timer){
       toast.warning("此場地已開始比賽");
     }else{
-      courts[court_index].timer = setInterval(function(){
-        courts[court_index].time += 1;
-      }, 1000);
+      const court_id =courts[court_index].id;
+      courts[court_index].timer = setInterval((court_id)=>{
+        for (let x = 0; x < courts.length; x++) {
+          if(courts[x].id==court_id){
+            courts[x].time += 1;
+            break;
+          }
+        }
+      }, 1000, court_id);
       refFirebase.value.db_update_data('game_date_courts', courts[court_index].id, {'users':courts[court_index].users});
     }
   }
@@ -245,11 +251,12 @@
     court_complete(court_index, court_index);
   }
   const court_next = (court_index) => {
-    let result = court_stop(court_index);
-    if(!result){ return; }
-
+    if(!check_court_empty(court_index)){
+      let result = court_stop(court_index);
+      if(!result){ return; }
+    }
     // refModalPoints.value.set_modal_data(court_index, -1, courts[court_index]);
-    court_complete(court_index, -1);
+    court_complete(court_index, -1);  
   }
   provide('court_delete', court_delete);
   provide('court_start', court_start);
@@ -304,10 +311,11 @@
 
   let played_user_ids = ref([]);
   const court_complete = async(finish_index, repeat_index) =>{
-    let contest_data = copy_court(courts[finish_index]);
-    
-    await refContestRecord.value.add_record(contest_data);
-    sync_contest_record();
+    if(!check_court_empty(finish_index)){
+      let contest_data = copy_court(courts[finish_index]);
+      await refContestRecord.value.add_record(contest_data);
+      sync_contest_record();
+    }
   
     /* 設定剛比完賽的人員 */
     played_user_ids.value = [];
@@ -333,6 +341,7 @@
     }
       
     change_user_calculate(finish_index); /* 更新人員比賽統計 */
+    // alert(has_next_game);
     if(has_next_game){
       start_new_game(finish_index);
     }else{
@@ -555,7 +564,7 @@
         user_set_status(user_index, 1, 'user_index');
         const ori_court_index = chage_user.court_index;
         chage_user.court_index = -1;
-        console.log(courts[ori_court_index]);
+        // console.log(courts[ori_court_index]);
         for (let x = 0; x < courts[ori_court_index].users.length; x++) {
           const element = courts[ori_court_index].users[x];
           for (let y = 0; y < element.length; y++) {
