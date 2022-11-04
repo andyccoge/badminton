@@ -11,6 +11,8 @@
   const swal = inject('$swal');
 
   const game_date_id = inject('game_date_id');
+  
+  const emit = defineEmits(['sync_contest_record']);
 
   const modal_open = inject('modal_open_contest_record') ? inject('modal_open_contest_record') : ref(false);
 
@@ -41,6 +43,7 @@
     for (let x = 0; x < contest_record_data.length; x++) {
       contest_record.push(contest_record_data[x]);
     }
+    emit('sync_contest_record');
   }
 
   // 分數面板-------------------------------------------------------------------------
@@ -67,6 +70,7 @@
       if (result.isConfirmed) {
         await refFirebase.value.db_delete_data('game_records', contest_record[index].id)
         contest_record.splice(index, 1);
+        emit('sync_contest_record');
       }
     });
   }
