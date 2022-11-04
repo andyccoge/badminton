@@ -108,6 +108,21 @@
     users.forEach((user, index) => {
       user_set_status(index, 1, 'user_index');
     });
+
+    /* 更新群組 */
+    const copy_teams = JSON.parse(JSON.stringify(users_by_teams));
+    users_by_teams.splice(0, users_by_teams.length);
+    for (let x = 0; x < copy_teams.length; x++) {
+      let in_group = [];
+      for (let y = 0; y < users.length; y++) {
+        if(copy_teams[x].indexOf(users[y].id)!=-1){
+          in_group.push(users[y].id);
+        }       
+      }
+      if(in_group.length>=2){
+        users_by_teams.push(in_group);
+      }
+    }
   }
   const renew_users = async() => {
     refFirebase.value.set_body_block_show_long(true);
