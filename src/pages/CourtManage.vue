@@ -226,7 +226,7 @@
     }
   }
   const court_stop = (court_index, need_notify=true) => {
-    if(courts[court_index].time<=0){
+    if(courts[court_index].time<=0 && !courts[court_index].timer){
       if(need_notify){
         toast.warning("此場地尚未開始比賽");
       }
