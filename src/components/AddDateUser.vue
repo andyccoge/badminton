@@ -48,7 +48,6 @@
   let date_users = reactive([]);
   let users_input_data = ref('');
   const add_users = async() => {
-    refFirebase.value.set_body_block_show_long(true);
     let data = users_input_data.value;
     data = data.split("\n");
     data = data.map((item)=>{ 
@@ -60,9 +59,10 @@
     data = data.filter((item)=>{ return item.trim() });
     // console.log(data);return;
     if(data.length==0){ 
-      refFirebase.value.set_body_block_show_long(false);
       toast.warning('請輸入員名稱');return;
     }
+    refFirebase.value.set_body_block_show_long(true);
+
     let changed = false;
     for (let i = 0; i < data.length; i++) {
       let user_id = '';
@@ -83,7 +83,7 @@
           for (let x = 0; x < repeat_users.length; x++) {
             const repeat = repeat_users[x];
             const gender_class = repeat.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400';
-            button_html += '<button class="btn inline-flex user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'">'+ 
+            button_html += '<button class="btn inline-flex user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'" user_id="'+ repeat.id +'">'+ 
                               repeat.name + 
                               '<span class="eye ml-3" user_id="'+ repeat.id +'" class="ml-3">\
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">\
@@ -95,7 +95,7 @@
           }
           await swal({
             title: '有重複人員：' + d,
-            text: "無法判別人員，請透過單一設定選擇",
+            text: "",
             icon: 'warning',
             html: button_html,
             showConfirmButton: false,
@@ -108,7 +108,9 @@
                   toggle_menu_open_left_id(user_id);
                   setTimeout(()=>{
                     let class_text = document.querySelector('.left_menu').getAttribute('class') + ' very_front ';
-                    document.querySelector('.left_menu').setAttribute('class', class_text);
+                    document.querySelectorAll('.left_menu').forEach(element => {
+                      element.setAttribute('class', class_text);
+                    });
                   }, 100);
                 });
               });
@@ -130,7 +132,9 @@
           });
           let class_text = document.querySelector('.left_menu').getAttribute('class');
           class_text = class_text.replaceAll('very_front', '');
-          document.querySelector('.left_menu').setAttribute('class', class_text);
+          document.querySelectorAll('.left_menu').forEach(element => {
+            element.setAttribute('class', class_text);
+          });
           if(target_user){ user_id = target_user.id; }
         }
         if(user_id){
@@ -218,7 +222,7 @@
 <template>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
-  <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
+  <ModalUserEditor @change_user_data="change_user_data" :users="users" ref="refModalUserEditor"></ModalUserEditor>
 
   <div class="p-2">
     <h4 class="">單一設定</h4>

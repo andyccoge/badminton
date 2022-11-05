@@ -1,11 +1,16 @@
 <script setup>
-  import { ref, reactive, inject } from 'vue';
+  import { ref, reactive, inject, provide } from 'vue';
   import { useToast } from "vue-toastification";
   import Firebase from '../components/Firebase.vue';
   import Modal from '../components/Modal.vue';
+  import Leftmenu from '../components/Leftmenu.vue';
   import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
+
+  const props = defineProps({
+    users: Array,
+  });
 
   const refFirebase = ref(null);
   
@@ -50,34 +55,61 @@
         for (let x = 0; x < repeat_users.length; x++) {
           const repeat = repeat_users[x];
           const gender_class = repeat.gender=='女' ?'bg-red-300 border-red-400' : 'bg-blue-300 border-blue-400';
-          button_html += '<button class="btn user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'">'+ 
+          button_html += '<button class="btn inline-flex user px-2 py-2 mx-3 my-2 rounded '+ gender_class +'" index="'+ x +'" user_id="'+ repeat.id +'">'+ 
                             repeat.name + 
-                            '('+ (repeat.nick ? repeat.nick+' ': '') + functions.stamp_to_time(repeat.create_time) +')\
+                            '<span class="eye ml-3" user_id="'+ repeat.id +'" class="ml-3">\
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">\
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />\
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />\
+                              </svg>\
+                            </span>\
                           </button>';
         }
         await swal({
           title: '有重複人員：' + target_user.name,
-          text: "無法判別人員，請透過單一設定選擇",
+          text: "",
           icon: 'warning',
           html: button_html,
           showConfirmButton: true,
           confirmButtonText: '跳過',
           confirmButtonColor: '#6e7881',
           didOpen: () => {
+            document.querySelectorAll('button.user .eye').forEach(element => {
+              element.addEventListener('click', (e) => {
+                const user_id = element.getAttribute('user_id');
+                toggle_menu_open_left_id(user_id);
+                setTimeout(()=>{
+                  let class_text = document.querySelector('.left_menu').getAttribute('class') + ' very_front ';
+                  document.querySelectorAll('.left_menu').forEach(element => {
+                    element.setAttribute('class', class_text);
+                  });
+                }, 100);
+              });
+            });
             document.querySelectorAll('button.user').forEach(element => {
               element.addEventListener('click', async(e) => {
-                refFirebase.value.set_body_block_show_top(true);
                 let index = element.getAttribute('index');
                 if(index=='強制建立'){
+                  refFirebase.value.set_body_block_show_top(true);
                   target_user = await refFirebase.value.db_add_data('users', target_user);
+                  refFirebase.value.set_body_block_show_top(false);
                 }else{
+                  if(e.currentTarget!=e.target){ return; }
                   if(game_date_id){
                     target_user = repeat_users[index];
                   }else{
                     target_user = null;
+                    const user_id = element.getAttribute('user_id');
+                    toggle_menu_open_left_id(user_id);
+                    setTimeout(()=>{
+                      let class_text = document.querySelector('.left_menu').getAttribute('class') + ' very_front ';
+                      document.querySelectorAll('.left_menu').forEach(element => {
+                        element.setAttribute('class', class_text);
+                      });
+                    }, 100);
+                    return;
                   }
                 }
-                refFirebase.value.set_body_block_show_top(false);
                 swal.close();
               });
             });
@@ -86,6 +118,11 @@
           if(result.isConfirmed){
             target_user = null;
           }
+        });
+        let class_text = document.querySelector('.left_menu').getAttribute('class');
+        class_text = class_text.replaceAll('very_front', '');
+        document.querySelectorAll('.left_menu').forEach(element => {
+          element.setAttribute('class', class_text);
         });
       }
       if(game_date_id && target_user){
@@ -114,6 +151,17 @@
       emit('change_user_data', userModal.index, target_user);
     }
   }
+
+  // 左側人員詳細料面板-------------------------------------------------------------------------
+  const refLeftmenu = ref(null);
+  const toggle_menu_open_left = async(user_index=-1)=>{
+    await refLeftmenu.value.toggle_menu_open_left(user_index);
+  }
+  const toggle_menu_open_left_id = async(user_id=-1)=>{
+    await refLeftmenu.value.toggle_menu_open_left_id(user_id);
+  }
+  provide('toggle_menu_open_left', toggle_menu_open_left);
+  provide('toggle_menu_open_left_id', toggle_menu_open_left_id);
 
   defineExpose({
     userModal,
@@ -178,6 +226,9 @@
       </button>
     </template>
   </modal>
+
+  <Leftmenu :users="props.users" :need_user_delete="false" ref="refLeftmenu">
+  </Leftmenu>
 </template>
 
 <style scoped>
