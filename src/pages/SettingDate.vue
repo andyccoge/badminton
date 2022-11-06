@@ -79,7 +79,7 @@
 <template>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
-  <ModalDateEditor @change_data="change_date_data" ref="refModalDateEditor"></ModalDateEditor>
+  <ModalDateEditor @change_data="change_date_data" :dates="dates" ref="refModalDateEditor"></ModalDateEditor>
   <ContestRecord ref="refContestRecord"></ContestRecord>
   <NavSetting></NavSetting>
 

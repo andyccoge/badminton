@@ -107,7 +107,7 @@
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
   <ContestRecord ref="refContestRecord"></ContestRecord>
-  <ModalDateEditor @change_data="change_date_data" ref="refModalDateEditor"></ModalDateEditor>
+  <ModalDateEditor @change_data="change_date_data" :dates="dates" ref="refModalDateEditor"></ModalDateEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <NavSetting></NavSetting>
 

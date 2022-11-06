@@ -144,6 +144,23 @@
     }
     return game_date_user_data;
   }
+  const copy_date= async(new_id, copy_target_id) => {
+    let date_users = await db_get_data('game_date_users', [['game_date_id','==', copy_target_id], {'orderBy':['create_time', 'asc']}]);
+    // console.log(date_users);
+    date_users.forEach((value, key) => { 
+      date_users[key].id = null;
+      date_users[key].game_date_id = new_id;
+    });
+    await db_set_data('game_date_users', date_users);
+    
+    let date_courts = await db_get_data('game_date_courts', [['game_date_id', '==', copy_target_id], {'orderBy':['create_time', 'asc']}]);
+    // console.log(date_courts);
+    date_courts.forEach((value, key) => { 
+      date_courts[key].id = null;
+      date_courts[key].game_date_id = new_id;
+    });
+    await db_set_data('game_date_courts', date_courts);
+  }
 
   defineExpose({
     set_body_block_show_long, /* 控制跨操作顯示黑屏 */
@@ -157,6 +174,7 @@
 
     add_game_date_users, /* 添加add_game_date_users */
     get_game_date_users, /* 依date_id取得人員資料 */
+    copy_date, /* 複製打球日的場地、人員資料 */
   })
 </script>
 
