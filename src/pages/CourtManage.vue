@@ -685,7 +685,7 @@
   <GoogleTextToSpeech ref="refGoogleTextToSpeech"></GoogleTextToSpeech>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
-  <ModalUserEditor @change_user_data="change_user_data" ref="refModalUserEditor"></ModalUserEditor>
+  <ModalUserEditor @change_user_data="change_user_data" :users="users" ref="refModalUserEditor"></ModalUserEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
   <ContestRecord ref="refContestRecord" @sync_contest_record="sync_contest_record"></ContestRecord>
