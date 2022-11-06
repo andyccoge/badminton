@@ -3,14 +3,21 @@
   import ModalAddhome from '../components/ModalAddhome.vue';
   import * as Icon from '@heroicons/vue/24/outline';
   import Modal from '../components/Modal.vue';
+  /* 載入設定 */
+  import { db_connect } from '../../db.config.js';
+  let db_connect_text = db_connect.split('-');
+  db_connect_text = db_connect_text.length>2 ? db_connect_text.slice(0, -1) : db_connect_text;
+  db_connect_text = db_connect_text.join('-');
+  const sys_name = ref(db_connect_text);
 
-  const modal_open_question = ref(false); 
+const modal_open_question = ref(false); 
 </script>
 
 <template>
   <ModalAddhome></ModalAddhome>
   <div class="h-screen flex flex-col items-center justify-center">
     <h1 class="font-bold mb-5 text-3xl sm:text-5xl text-center">
+      <span class="text-sm" v-text="sys_name"></span><br>
       羽球排場系統
       <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_question=true">
         <Icon.QuestionMarkCircleIcon class="w-5 h-5"></Icon.QuestionMarkCircleIcon>

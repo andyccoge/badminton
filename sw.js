@@ -1,3 +1,5 @@
+/* <link rel="manifest" href="/src/assets/manifest.json"> */
+
 self.addEventListener('install', function (event) {
 });
 self.addEventListener('activate', function (event) {
