@@ -110,6 +110,7 @@
 
   defineExpose({
     init_alert_wait, /* 初始化等候提醒數 */
+    users_show_by_normal, /* 讓外部取得依在場狀態排序的人員名單 */
   });
 </script>
 

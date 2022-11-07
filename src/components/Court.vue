@@ -8,7 +8,7 @@
     court: Object,
     court_index: Number,
   });
-  const emit = defineEmits(['court_users_to_speech']);
+  const emit = defineEmits(['court_users_to_speech', 'auto_set_users']);
   const court_img = ref('/src/assets/img/badminton_court_e.png');
   // const court_img = ref('/src/assets/img/badminton_court_v_e.png');
 
@@ -88,6 +88,9 @@
         <button class="px-2" @click="court_eidt(props.court_index)" v-if="court.type==1">
           <Icon.PencilSquareIcon class="w-5 h-5 text-white"></Icon.PencilSquareIcon>
         </button>
+        <button class="px-2" @click="emit('auto_set_users', props.court_index)" v-if="court.type==0">
+          <Icon.LightBulbIcon class="w-5 h-5 text-white"></Icon.LightBulbIcon>
+        </button>
         <button class="px-2" @click="court_delete(props.court_index)" v-if="court.type==0 || get_use_sound()!='true'">
           <Icon.TrashIcon class="w-5 h-5 text-white"></Icon.TrashIcon>
         </button>
@@ -135,7 +138,7 @@
                       @click.self="court_chage_user(props.court_index, group_index, user_index)">
                   <span class="line-clamp-2" :class="{'opacity-30' : check_on_court(user_id) && court.type==0}"
                       @click.self="court_chage_user(props.court_index, group_index, user_index)"
-                      v-text="functions.get_user_name(users, user_id)" >
+                      v-text="functions.get_user_name(users, user_id, true)" >
                   </span>
                   <span class="hidden court_user_panel absolute bg-slate-800 w-fit rounded px-1 flex-col sm:flex-row" v-if="user_id!=0">
                     <button class="py-1 mx-2" @click="toggle_menu_open_left_id(user_id)">

@@ -606,15 +606,15 @@
     team_select_uesr_ids.value = [];
   }
   const check_on_court = (user_id, court_type=1, court_index=-1) => {
-    let on_court = false;
+    let on_court = 0;
     for (let i = 0; i < courts.length; i++) {
       if(courts[i].type==court_type){ /*屬於要找的場地類型*/
         if(court_index==-1 || court_index==i){ /*不依場地看 或 是要檢查的場地*/
           for (let x = 0; x < courts[i].users[0].length; x++) {
-            if(courts[i].users[0][x] == user_id){ on_court=true;break; }
+            if(courts[i].users[0][x] == user_id){ on_court+=1; }
           }
           for (let x = 0; x < courts[i].users[1].length; x++) {
-            if(courts[i].users[1][x] == user_id){ on_court=true;break; }
+            if(courts[i].users[1][x] == user_id){ on_court+=1; }
           }
         }
       }
@@ -627,6 +627,16 @@
   provide('select_user', select_user);
   provide('grouping_users', grouping_users);
   provide('check_on_court', check_on_court);
+
+  // 上方選單-------------------------------------------------------------------------
+  const refNav = ref(null);
+  const auto_set_users = (court_index) => {
+    const result = refNav.value.refModalAutoSetUserSettingdal.get_recommend_users(users, courts, contest_record);
+    // console.log(result)
+    if(result){
+      courts[court_index].users = JSON.parse(JSON.stringify(result));
+    }
+  }
 
   // 左側人員詳細料面板-------------------------------------------------------------------------
   const refLeftmenu = ref(null);
@@ -690,7 +700,7 @@
   <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
   <ContestRecord ref="refContestRecord" @sync_contest_record="sync_contest_record"></ContestRecord>
 
-  <Nav></Nav>
+  <Nav ref="refNav"></Nav>
   <Leftmenu :users="users" ref="refLeftmenu" 
             @change_user_data="change_user_data" :need_user_date_info="true"
             @userModal_open="userModal_open" :need_user_edit="true"
@@ -726,12 +736,12 @@
       <span class="absolute pl-3 pt-3 animate-bounce" v-if="courts_pre.length>0">
         <Icon.ArrowDownIcon class="h-8 w-8 text-yellow-400"></Icon.ArrowDownIcon>
       </span>
-
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
           <Court v-if="court.type==0"
               :court="court"
               :court_index="court_index"
+              @auto_set_users="auto_set_users"
           ></Court>
         </template>
       </div>

@@ -3,6 +3,7 @@
   import { ref, inject } from 'vue';
   import { db_sign_out } from '../firebase.js';
   import Modal from '../components/Modal.vue';
+  import ModalAutoSetUserSettingdal from '../components/ModalAutoSetUserSetting.vue';
   import * as Icon from '@heroicons/vue/24/outline';
   import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
   const show_notify = false;
@@ -29,6 +30,14 @@
   const toggle_use_sound = inject('toggle_use_sound') ? inject('toggle_use_sound') : ()=>{};
   const get_use_sound = inject('get_use_sound') ? inject('get_use_sound') : ()=>{return 'false'};
   const modal_open_question = ref(false); 
+
+  const refModalAutoSetUserSettingdal = ref(null);
+  const open_ModalAutoSetUserSettingdal = () => {
+    refModalAutoSetUserSettingdal.value.toggle_modal(true);
+  }
+  defineExpose({
+    refModalAutoSetUserSettingdal,
+  })
 </script>
 
 <template>
@@ -51,6 +60,9 @@
           <div class="flex items-center">
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_question=true">
               <Icon.QuestionMarkCircleIcon class="w-5 h-5"></Icon.QuestionMarkCircleIcon>
+            </button>
+            <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="open_ModalAutoSetUserSettingdal">
+              <Icon.LightBulbIcon class="w-5 h-5"></Icon.LightBulbIcon>
             </button>
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="toggle_use_sound">
               <Icon.SpeakerWaveIcon class="w-5 h-5" v-if="get_use_sound()=='true'"></Icon.SpeakerWaveIcon>
@@ -163,39 +175,47 @@
         </li>
         <li class="mb-2">
           人員面板：<br>
-          點擊人員面板即可開啟/關閉它，裡面包含該打球日所有的球員，並會依在場地上的狀態有不同顯示，如果有上比賽場會變為透明，如果有上預備場會發黃光。<br>
-          人員面板上有一排控制按鈕，由左到右是「切換顯示內容多寡」、「重新載入人員」、「切換群組人員模式」、「添加人員」，各別功能說明如下：
+          點擊人員面板即可開啟/關閉它，裡面包含該打球日所有球員的名牌，並會依在場地上的狀態有不同顯示，例：如果有上「比賽場」會變為透明；如果有上「預備場」會發黃光。<br>
+          人員面板上有一排控制按鈕，由左到右是「切換顯示內容多寡」、「重新載入」、「切換群組人員模式」、「添加人員」，各別功能說明如下：
           <ul>
             <li>
               顯示內容：<br>
-              預設為多，會顯示「排序設定」、「各人員完賽數」、「等候提示場數輸入區」，其中排序分為三種：
+              預設為多，人員名牌除姓名、等級外，會多顯示「各人員完賽數」，另有顯示功能「排序設定」、「等候提示場數輸入區」，其中名牌排序分為三種：
               <ul>
-                <li>一般：依未準備、準備中、比賽中分批先後顯示，各批再依完賽數由小到大排序。</li>
-                <li>自訂：可行拖拉排序，但有新增、刪除人員時，會重置。另外在此排序下若想選擇人員上場，請「關閉」拖拉功能(開關在下拉選右側)，否則可能無法操作。</li>
+                <li>一般：依『未準備』、『準備中』、『比賽中』分批先後顯示，各批再依『完賽數』由小到大排序(因此排序越前表示越應該安排上場)。</li>
+                <li>自訂：可行拖拉排序，但有新增、刪除人員時，會重置。另外在此排序下若想選擇人員上場，請先「關閉」拖拉功能(開關在下拉選右側)，否則可能無法操作。</li>
                 <li>群組；有組別的排在前面。</li>
               </ul>
-              等候提示場數輸入區可輸入數字，當人員等候場數大於設定的數字時，人員右上方將有發光紅點標記。
+              等候提示場數輸入區可輸入數字，當人員等候場數大於設定的數字時，名牌右上方將有發光紅點提醒。
             </li>
             <li>
               群組人員模式：<br>
-              此模式下可對人員進行標記，主要用於註記有一起上場需求的人，使用方式如下：
+              此模式下可對人員進行標記，可用於註記有一起上場需求的人，使用方式如下：
               <ul>
                 <li>先入群組人員模式(人員面板會變為黑色)，然後點擊全部想群組的人，再點建成群組就會標上組別。</li>
-                <li>如果希望刪除群組，則一次只選一人建成群組，慢慢就會被移除。</li>
+                <li>如果希望刪除群組，則一次只選一個名牌建成群組，慢慢就會被移除。</li>
                 <li>關閉面板或再點一次「切換群組人員模式」就會離開群駔人員模式。</li>
               </ul>             
             </li>
-            <li>添加人員會比對姓名是否重複(同打球日詳細內容設定人員的單一新增)。</li>
+            <li>添加人員會比對姓名是否重複(同「打球日細項」設定人員的「單一新增」)。</li>
           </ul>
-          各人員有小眼睛，點擊可打開「人員詳細資料」，其中可查看詳細內容外，也可設定是否繳費、資料編輯等。另外有兩種方式也可開啟「人員詳細資料」：
+          各名牌有「小眼睛」，點擊可打開「人員詳細資料」，其中也可設定是否繳費、資料編輯等功能。另外還有兩種方式也可開啟「人員詳細資料」：
           <ul>
-            <li>在非「排人模式」、非「群組人員模式」下點擊人員。</li>
-            <li>長按場地上人員姓名，下方會顯示黑色操作選單，點擊小眼睛即可。</li>
+            <li>在非「排人模式」、非「群組人員模式」下點擊人員名牌。</li>
+            <li>長按場地上人員姓名，下方會顯示黑色操作選單，點擊「小眼睛」即可。</li>
           </ul>
         </li>
         <li class="mb-2">
-          比賽紀錄：<br>
+          比賽紀錄(表格按鈕)：<br>
           當比賽場換下一場時，會產生比賽紀錄，可於上方選單右側「表格」按鈕點擊看到，點擊比數超連結可對其進行修改。
+        </li>
+        <li class="mb-2">
+          開關語音：<br>
+          可點擊上方選單右側「聲音」按鈕控制是否使用語音功能，語音功能需透過網路向google服務互動，請留意網路是否順暢，可能需等候幾秒讓語音生成。
+        </li>
+        <li class="mb-2">
+          智慧排場設定：<br>
+          可點擊上方選單右側「燈泡」按鈕開啟控制視窗，設定相關參數。
         </li>
       </ul>
     </template>
@@ -203,6 +223,8 @@
       <div></div>
     </template>
   </modal>
+
+  <ModalAutoSetUserSettingdal ref="refModalAutoSetUserSettingdal"></ModalAutoSetUserSettingdal>
 </template>
 
 <style scoped>

@@ -81,6 +81,9 @@ const data_with_base_column = (table, data, add_column=false) => {
     if(typeof(data_copy['users'])!='undefined'){ data_copy['users'] = JSON.stringify(data_copy['users']); }
     empty_data = {id:null, game_date_id:null, users:'[["",""], ["",""]]', time:0, game_points:[0,0]};
   }
+  else if(table=='auto_set_user_setting'){
+    empty_data = {id:null, diff_level_sum:0, diff_level_divi:0, woman_level_deduct:0, no_deduct_level:0};
+  }
 
   let keys = Object.keys(empty_data);
   if(add_column){ /* 補欄位 */

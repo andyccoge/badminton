@@ -81,10 +81,14 @@ export function get_href_attr(attr=''){
   return attr;
 }
 
-export function get_user_name(users, user_id){
+export function get_user_name(users, user_id, show_level=false){
   for (let index = 0; index < users.length; index++) {
     const element = users[index];
-    if(element.id==user_id){ return element.nick ? element.nick : element.name; };
+    if(element.id==user_id){ 
+      let text = element.nick ? element.nick : element.name; 
+      text += show_level ? '('+ element.level +')' : '';
+      return text;
+    };
   }
   return "";
 }
@@ -93,6 +97,17 @@ export function merge_user_and_date_user_data(user, game_date_user_data){
   let date_user_id = game_date_user_data.id;
   const merge_data = {...game_date_user_data, ...user, date_user_id: date_user_id};
   return merge_data
+}
+
+export function random_sort_array(array) {
+  array = JSON.parse(JSON.stringify(array))
+  for (var i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+  }
+  return array;
 }
 
 
