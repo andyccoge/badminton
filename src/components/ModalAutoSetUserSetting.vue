@@ -53,13 +53,19 @@
       users[k].level = get_calculate_level(v); /* 計算目標等級 */
     });
     var users = users.sort(function(a, b) { return a.pre_paired - b.pre_paired || a.playing - b.playing; });
+    // console.log(get_data(users, 'pre_paired'));
     
     let ids = [['',''],['','']];
     const allow_repeat_limit = 6;
     for (let allow_repeat_num = 0; allow_repeat_num < allow_repeat_limit; allow_repeat_num++) {
       const group = {'group1':[], 'group2':[]};
       const group_level_sum = {'group1':0, 'group2':0};
-      if(allow_repeat_num==5){ users = functions.random_sort_array(users); }
+      if(allow_repeat_num==5){ 
+        users = functions.random_sort_array(users);
+        // console.log(get_data(users, 'name'));
+      }
+      // console.log(get_data(users, 'pre_paired'));
+      // console.log(get_data(users, 'name'));
       let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num);
       if(result){
         // console.log(get_data(result['group1'],'name'));
@@ -91,42 +97,44 @@
       // console.log(get_data(group['group1'],'name'), get_data(group['group2'],'name'), user.name);
       let target_user_level = user.level;
       let add_user = true;
-      /* 檢查兩兩等級差異 跟 是否加入過 */
-      for (let y = 0; y < group['group1'].length; y++) {
-        if(Math.abs(target_user_level - group['group1'][y].level) > modal.data.diff_level_divi 
-           || group['group1'][y].id == user.id
-        ){
-          add_user = false;
+      if(allow_repeat_num<=4){ /* 允許值小於等於4時 */
+        /* 檢查兩兩等級差異 跟 是否加入過 */
+        for (let y = 0; y < group['group1'].length; y++) {
+          if(Math.abs(target_user_level - group['group1'][y].level) > modal.data.diff_level_divi 
+             || group['group1'][y].id == user.id
+          ){
+            add_user = false;
+          }
         }
-      }
-      for (let y = 0; y < group['group2'].length; y++) {
-        if(Math.abs(target_user_level - group['group2'][y].level) > modal.data.diff_level_divi
-           || group['group2'][y].id == user.id
-        ){
-          add_user = false;
+        for (let y = 0; y < group['group2'].length; y++) {
+          if(Math.abs(target_user_level - group['group2'][y].level) > modal.data.diff_level_divi
+             || group['group2'][y].id == user.id
+          ){
+            add_user = false;
+          }
         }
-      }
-      /* 目前還需添加此人 */
-      if(add_user){ 
-        const ids = [['',''],['','']];
-        group['group1'].forEach((v,k) => { ids[0][k] = v.id; });
-        group['group2'].forEach((v,k) => { ids[1][k] = v.id; });
-        ids[target_index][group[target_key].length] = user.id;
-        /* 檢查是否跟場上組合重複 */
-        for (let y = 0; y < courts.length; y++) {
-          if(check_users_same(ids, courts[y]['users'], allow_repeat_num)){ add_user=false; break; }
+        /* 目前還需添加此人 */
+        if(add_user){ 
+          const ids = [['',''],['','']];
+          group['group1'].forEach((v,k) => { ids[0][k] = v.id; });
+          group['group2'].forEach((v,k) => { ids[1][k] = v.id; });
+          ids[target_index][group[target_key].length] = user.id;
+          /* 檢查是否跟場上組合重複 */
+          for (let y = 0; y < courts.length; y++) {
+            if(check_users_same(ids, courts[y]['users'], allow_repeat_num)){ add_user=false; break; }
+          }
+          /* 檢查是否跟比賽紀錄重複 */
+          for (let y = 0; y < records.length; y++) {
+            if(check_users_same(ids, records[y]['users'], allow_repeat_num)){ add_user=false; break; }
+          }
         }
-        /* 檢查是否跟比賽紀錄重複 */
-        for (let y = 0; y < records.length; y++) {
-          if(check_users_same(ids, records[y]['users'], allow_repeat_num)){ add_user=false; break; }
-        }
-      }
-      /* 再加一人就滿了 且 目前還需添加此人 */
-      if((group['group1'].length + group['group2'].length==3) && add_user){
-        /* 檢查兩組等級總和差異 */
-        let now_diff = Math.abs(group_level_sum['group1'] - group_level_sum['group2']);
-        if(Math.abs(now_diff - target_user_level) > modal.data.diff_level_sum){
-          add_user = false;
+        /* 再加一人就滿了 且 目前還需添加此人 */
+        if((group['group1'].length + group['group2'].length==3) && add_user){
+          /* 檢查兩組等級總和差異 */
+          let now_diff = Math.abs(group_level_sum['group1'] - group_level_sum['group2']);
+          if(Math.abs(now_diff - target_user_level) > modal.data.diff_level_sum){
+            add_user = false;
+          }
         }
       }
       /* 經各種檢查後還需添加此人 */
@@ -183,13 +191,14 @@
       if(group2_ids.indexOf(id)!=-1 && id!=''){ repeat_num+=1; }
     }
 
-    if(allow_repeat_num>4){ /* 允許值大於4時 */
+    if(allow_repeat_num<=4){ /* 允許值小於等於4時 */
+      if( repeat_num<=allow_repeat_num ){ /* 重複數小於允許值時 */
+        return same_records==group1.length; /* 只要不完全重複就可 */
+      }else{
+        return true;  /* 視為重複 */
+      }
+    }else{ /* 允許值大於4時 */
       return false;  /* 視為不重複 */
-    }
-    else if( repeat_num<=allow_repeat_num ){ /* 重複數小於允許值時 */
-      return same_records==group1.length; /* 只要不完全重複就可 */
-    }else{
-      return true;  /* 視為重複 */
     }
   }
 
