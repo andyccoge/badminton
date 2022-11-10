@@ -54,6 +54,8 @@
     });
     var users = users.sort(function(a, b) { return a.pre_paired - b.pre_paired || a.playing - b.playing; });
     // console.log(get_data(users, 'pre_paired'));
+    // console.log(get_data(users, 'playing'));
+    // console.log(get_data(users, 'nick'));
     
     let ids = [['',''],['','']];
     const allow_repeat_limit = 6;
@@ -64,6 +66,7 @@
         users = functions.random_sort_array(users);
         // console.log(get_data(users, 'name'));
       }
+      // console.log(allow_repeat_num);
       // console.log(get_data(users, 'pre_paired'));
       // console.log(get_data(users, 'name'));
       let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num);

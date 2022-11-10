@@ -12,7 +12,7 @@
 
   const game_date_id = inject('game_date_id');
   
-  const emit = defineEmits(['sync_contest_record']);
+  const emit = defineEmits(['sync_contest_record', 'set_users_played_num']);
 
   const modal_open = inject('modal_open_contest_record') ? inject('modal_open_contest_record') : ref(false);
 
@@ -44,6 +44,8 @@
       contest_record.push(contest_record_data[x]);
     }
     emit('sync_contest_record');
+    emit('set_users_played_num');
+    /* 更新完賽數 */
   }
 
   // 分數面板-------------------------------------------------------------------------
@@ -97,13 +99,15 @@
     get_data,
     add_record,
   });
+
+  const overflow = ref('unset');
 </script>
 
 <template>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
   <!-- 比賽紀錄 -->
-  <modal :show="modal_open" :click_bg_close="false" @close="modal_open=false">
+  <modal :show="modal_open" :click_bg_close="false" :overflow="overflow" @close="modal_open=false">
     <template #header>
       <h3 class="font-bold text-xl flex items-center">
         比賽紀錄
@@ -113,55 +117,53 @@
       </h3>
     </template>
     <template #body>
-      <div class="table_container">
-        <table class="w-full flex flex-row flex-no-wrap sm:bg-white sm:shadow-lg">
+      <div class="table_container" style="max-width: 80vw; overflow: scroll;">
+        <table class="w-full sm:bg-white sm:shadow-lg">
           <thead class="text-white">
-            <tr v-if="contest_record.length==0"
-                class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
-              <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>
-              <th class="border-grey-light border p-2 sm:border-0">隊伍1</th>
-              <th class="border-grey-light border p-2 sm:border-0">比數</th>
-              <th class="border-grey-light border p-2 sm:border-0">隊伍2</th>
-              <th class="border-grey-light border p-2 sm:border-0 text-right">時間</th>
-              <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">操作</span></th>
-            </tr>
-            <tr v-for="(record, index) in contest_record"
-                class="bg-teal-400 flex flex-col flex-no wrap sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
-              <th class="border-grey-light border p-2 sm:border-0 text-right">序號</th>
-              <th class="border-grey-light border p-2 sm:border-0">隊伍1</th>
-              <th class="border-grey-light border p-2 sm:border-0">比數</th>
-              <th class="border-grey-light border p-2 sm:border-0">隊伍2</th>
-              <th class="border-grey-light border p-2 sm:border-0 text-right">時間</th>
-              <th class="border-grey-light border p-2 sm:border-0"><span class="line-clamp-1 sm:line-clamp-none">操作</span></th>
+            <tr class="bg-teal-400 sm:table-row rounded-l-lg sm:rounded-none mb-2 sm:mb-0">
+              <th class="border-grey-light border px-2 py-1 sm:border-0 text-right">序號</th>
+              <th class="border-grey-light border px-2 py-1 sm:border-0">隊伍1</th>
+              <th class="border-grey-light border px-2 py-1 sm:border-0"><span class="col_point">比數</span></th>
+              <th class="border-grey-light border px-2 py-1 sm:border-0">隊伍2</th>
+              <th class="border-grey-light border px-2 py-1 sm:border-0 text-right"><span class="col_time">時間</span></th>
+              <th class="border-grey-light border px-2 py-1 sm:border-0"><span class="line-clampx-2 py-1 sm:line-clamp-none">操作</span></th>
             </tr>
           </thead>
-          <tbody class="flex-1 sm:flex-none">
+          <tbody class="sm:flex-none">
             <tr v-for="(record, index) in contest_record"
-                class="flex flex-col flex-no wrap sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
-              <td class="border-grey-light border p-2 text-right"><span v-text="index+1"></span></td>
-              <td class="border-grey-light border p-2 text-center">
-                <span v-text="functions.get_user_name(users, record.users[0][0])"></span>
-                <span v-if="record.users[0][0]!=0 && record.users[0][1]!=0">、</span>
-                <span v-text="functions.get_user_name(users, record.users[0][1])"></span>
+                class="sm:table-row mb-2 sm:mb-0 bg-white hover:bg-gray-100">
+              <td class="border-grey-light border px-2 py-1 text-right"><span v-text="index+1"></span></td>
+              <td class="border-grey-light border px-2 py-1 text-center">
+                <div class="flex flex-wrap justify-center">
+                  <span v-text="functions.get_user_name(users, record.users[0][0])"></span>
+                  <span v-if="record.users[0][0]!=0 && record.users[0][1]!=0">、</span>
+                  <span v-text="functions.get_user_name(users, record.users[0][1])"></span>
+                </div>
               </td>
-              <td class="border-grey-light border p-2 text-center">
-                <a href="###" class="text-blue-500" @click="open_modal_poists(index)">
-                  <span v-text="record.game_points[0]"></span>：<span v-text="record.game_points[1]"></span>
-                </a>
+              <td class="border-grey-light border px-2 py-1 text-center">
+                <span class="col_point">
+                  <a href="###" class="text-blue-500" @click="open_modal_poists(index)">
+                    <span v-text="record.game_points[0]"></span>：<span v-text="record.game_points[1]"></span>
+                  </a>
+                </span>
               </td>
-              <td class="border-grey-light border p-2 text-center">
-                <span v-text="functions.get_user_name(users, record.users[1][0])"></span>
-                <span v-if="record.users[1][0]!=0 && record.users[1][1]!=0">、</span>
-                <span v-text="functions.get_user_name(users, record.users[1][1])"></span>
+              <td class="border-grey-light border px-2 py-1 text-center">
+                <div class="flex flex-wrap justify-center">
+                  <span v-text="functions.get_user_name(users, record.users[1][0])"></span>
+                  <span v-if="record.users[1][0]!=0 && record.users[1][1]!=0">、</span>
+                  <span v-text="functions.get_user_name(users, record.users[1][1])"></span>
+                </div>
               </td>
-              <td class="border-grey-light border p-2 text-right"><span v-text="game_time(record.time)"></span></td>
-              <td class="border-grey-light border p-1">
-                <div class="sm:flex block justify-around mt-0.5 flex-wrap">
+              <td class="border-grey-light border px-2 py-1 text-right">
+                <span class="col_time" v-text="game_time(record.time)"></span>
+              </td>
+              <td class="border-grey-light border px-2 py-1 ">
+                <div class="oper_point sm:flex block justify-around mt-0.5 flex-wrap">
                   <button class="sm:mr-0 mr-2 rounded bg-blue-500 border-2 border-blue-700"
                           @click="open_modal_poists(index)">
                     <Icon.PencilSquareIcon class="h-5 w-5 text-white"></Icon.PencilSquareIcon>
                   </button>
-                  <button class="sm:mr-0 mr-2  rounded bg-red-500 border-2 border-red-700"
+                  <button class="sm:mr-0 mr-0 rounded bg-red-500 border-2 border-red-700"
                           @click="record_delete(index)">
                     <Icon.TrashIcon class="h-5 w-5 text-white"></Icon.TrashIcon>
                   </button>
@@ -185,7 +187,22 @@
   html, body {
     height: 100%;
   }
-
+  .table_container{
+    max-height: 65vh;
+  }
+  .col_point{
+    display: inline-block;
+    width: 65px;
+    text-align: center;
+  }
+  .col_time{
+    display: inline-block;
+    width: 55px;
+  }
+  .oper_point{
+    min-width: 56px;
+    text-align: center;
+  }
   @media (max-width: 479px) {
     table{
       max-width: calc(100vw - 72px);

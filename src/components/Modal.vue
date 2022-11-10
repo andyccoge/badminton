@@ -4,7 +4,10 @@
   const props = defineProps({
     show: Boolean,
     click_bg_close: Boolean,
+    overflow: String,
   })
+  console.log(props.overflow)
+  let body_style = props.overflow ? {'overflow':props.overflow} : {'overflow-y':'scroll'};
 </script>
 
 <template>
@@ -20,7 +23,7 @@
               </button>
               <slot name="header">default header</slot>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" :style="body_style">
               <slot name="body">default body</slot>
             </div>
             <div class="modal-footer">
@@ -73,7 +76,6 @@
   .modal-body {
     margin: 20px 0;
     max-height: 80vh;
-    overflow-y: scroll;
   }
   
   .modal-default-button {

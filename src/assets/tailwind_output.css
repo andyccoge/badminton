@@ -1003,6 +1003,10 @@ body{
   margin-bottom: 5rem;
 }
 
+.mr-0 {
+  margin-right: 0px;
+}
+
 .block {
   display: block;
 }
@@ -1699,8 +1703,8 @@ body{
   padding-top: 0.75rem;
 }
 
-.pr-3 {
-  padding-right: 0.75rem;
+.pr-2 {
+  padding-right: 0.5rem;
 }
 
 .text-center {
@@ -1800,11 +1804,6 @@ body{
 .text-yellow-500 {
   --tw-text-opacity: 1;
   color: rgb(234 179 8 / var(--tw-text-opacity));
-}
-
-.text-red-400 {
-  --tw-text-opacity: 1;
-  color: rgb(248 113 113 / var(--tw-text-opacity));
 }
 
 .opacity-25 {

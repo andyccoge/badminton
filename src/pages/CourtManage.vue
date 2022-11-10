@@ -109,6 +109,9 @@
       user_set_status(index, 1, 'user_index');
     });
 
+    /* 更新完賽數 */
+    set_users_played_num();
+
     /* 更新群組 */
     const copy_teams = JSON.parse(JSON.stringify(users_by_teams));
     users_by_teams.splice(0, users_by_teams.length);
@@ -128,6 +131,18 @@
     refFirebase.value.set_body_block_show_long(true);
     await get_play_users();
     refFirebase.value.set_body_block_show_long(false);
+  }
+  const set_users_played_num = () => {
+    users.forEach((item, y) => {
+      users[y].played = 0;
+    });
+    for (let x = 0; x < contest_record.length; x++) {
+      const game_users = contest_record[x].users;
+      users.forEach((item, y) => {
+        if(game_users[0].indexOf(item.id)!=-1){ users[y].played += 1; }
+        if(game_users[1].indexOf(item.id)!=-1){ users[y].played += 1; }
+      });
+    }
   }
   const add_show_user = (data) => {
     data = {...data, ...user_play_data_empty};
@@ -698,7 +713,7 @@
   <ModalUserEditor @change_user_data="change_user_data" :users="users" ref="refModalUserEditor"></ModalUserEditor>
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
-  <ContestRecord ref="refContestRecord" @sync_contest_record="sync_contest_record"></ContestRecord>
+  <ContestRecord ref="refContestRecord" @sync_contest_record="sync_contest_record" @set_users_played_num="set_users_played_num"></ContestRecord>
 
   <Nav ref="refNav"></Nav>
   <Leftmenu :users="users" ref="refLeftmenu" 
