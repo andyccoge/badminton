@@ -6,7 +6,7 @@
     click_bg_close: Boolean,
     overflow: String,
   })
-  console.log(props.overflow)
+  // console.log(props.overflow);
   let body_style = props.overflow ? {'overflow':props.overflow} : {'overflow-y':'scroll'};
 </script>
 

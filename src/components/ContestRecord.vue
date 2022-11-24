@@ -83,6 +83,7 @@
   }
   const add_record = async(contest_data) => {
     let add_result = await refFirebase.value.db_add_data('game_records', {...contest_data, game_date_id:game_date_id.value});
+    // let add_result = null;
     contest_data = add_result ? add_result : contest_data;
     contest_record.unshift(contest_data);
   }

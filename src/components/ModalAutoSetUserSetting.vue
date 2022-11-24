@@ -48,45 +48,37 @@
   const get_recommend_users = (users, courts=[], records=[]) => {
     users = JSON.parse(JSON.stringify(users));
     users.forEach((v,k) => {
-      users[k].pre_paired =  check_on_court(v.id, 0);
-      users[k].playing =  check_on_court(v.id, 1);
+      users[k].pre_paired = check_on_court(v.id, 0);
+      users[k].playing = check_on_court(v.id, 1);
       users[k].level = get_calculate_level(v); /* 計算目標等級 */
     });
-    var users = users.sort(function(a, b) { return a.pre_paired - b.pre_paired || a.playing - b.playing; });
-    // console.log(get_data(users, 'pre_paired'));
-    // console.log(get_data(users, 'playing'));
-    // console.log(get_data(users, 'nick'));
-    
-    let ids = [['',''],['','']];
-    const allow_repeat_limit = 6;
+    var users = users.sort(function(a, b) { return a.pre_paired - b.pre_paired || a.playing - b.playing}); /* 依準備場次由少到多排序 及 比賽場次由多到少 */
+    // console.log(get_data(users, 'nick'), get_data(users, 'pre_paired'), get_data(users, 'playing'));
+  
+    const all_rest_cond = [true, false]; /* 先要求全部閒置、再不依狀態取人 */
+    for (let z = 0; z < all_rest_cond.length; z++) {
+      const all_rest = all_rest_cond[z];
+      let ids = get_next_user_with_status(users, courts, records, all_rest);
+      if(ids!==null){ return ids; }
+    }
+    toast.warning('無可自動安排的組合');
+  }
+  const get_next_user_with_status = (users, courts, records, all_rest) => {
+    const allow_repeat_limit = all_rest ? 5 : 6; /* 如果要求全部閒置，那允許重複數不可超過4(不允許隨機組) */
     for (let allow_repeat_num = 0; allow_repeat_num < allow_repeat_limit; allow_repeat_num++) {
       const group = {'group1':[], 'group2':[]};
       const group_level_sum = {'group1':0, 'group2':0};
-      if(allow_repeat_num==5){ 
-        users = functions.random_sort_array(users);
-        // console.log(get_data(users, 'name'));
-      }
+      if(allow_repeat_num==5){ users = functions.random_sort_array(users); }
       // console.log(allow_repeat_num);
-      // console.log(get_data(users, 'pre_paired'));
-      // console.log(get_data(users, 'name'));
-      let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num);
-      if(result){
-        // console.log(get_data(result['group1'],'name'));
-        // console.log(get_data(result['group2'],'name'));
-        ids = [['',''],['','']];
-        let all_has_user = true;
-        for (let x = 0; x < ids[0].length; x++){
-          if(typeof(result['group1'][x])!='undefined'){ ids[0][x] = result['group1'][x].id; }
-          if(typeof(result['group2'][x])!='undefined'){ ids[1][x] = result['group2'][x].id; }
-          if(ids[0][x]=='' || ids[1][x]==''){ all_has_user = false; break; }
-        }
-        if(all_has_user){ return ids; }
+      let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num, all_rest);
+      if(result){ 
+        let ids = result_get_ids(result);
+        if(ids!==null){ return ids; }
       }
     }
-    // console.log(ids);
-    toast.warning('無可自動安排的組合');
+    return null;
   }
-  const get_next_user = (users, group, group_level_sum, courts=[], records=[], allow_repeat_num=0) => {
+  const get_next_user = (users, group, group_level_sum, courts=[], records=[], allow_repeat_num=0, all_rest=true) => {
     users = JSON.parse(JSON.stringify(users));
     group = JSON.parse(JSON.stringify(group));
     group_level_sum = JSON.parse(JSON.stringify(group_level_sum));
@@ -97,6 +89,7 @@
       let target_key = group.group1.length == group.group2.length ? 'group1' : 'group2';
       let target_index = group.group1.length == group.group2.length ? 0 : 1;
       const user = users[x];
+      if(all_rest && user.playing!=0){ continue; } /* 若要求全部人都是閒置狀態 且 該人員有在比賽，則跳過 */
       // console.log(get_data(group['group1'],'name'), get_data(group['group2'],'name'), user.name);
       let target_user_level = user.level;
       let add_user = true;
@@ -151,7 +144,7 @@
         let rest_users = JSON.parse(JSON.stringify(users));
         rest_users.splice(x, 1);
         if(rest_users.length>0){
-          let result = get_next_user(rest_users, next_group, next_group_level_sum, courts, records, allow_repeat_num);
+          let result = get_next_user(rest_users, next_group, next_group_level_sum, courts, records, allow_repeat_num, all_rest);
           if(result){ 
             if(result['group1'].length + result['group2'].length==4){ return result; }
           }
@@ -202,6 +195,20 @@
       }
     }else{ /* 允許值大於4時 */
       return false;  /* 視為不重複 */
+    }
+  }
+  const result_get_ids = (result) => {
+    let ids = [['',''],['','']];
+    let all_has_user = true;
+    for (let x = 0; x < ids[0].length; x++){
+      if(typeof(result['group1'][x])!='undefined'){ ids[0][x] = result['group1'][x].id; }
+      if(typeof(result['group2'][x])!='undefined'){ ids[1][x] = result['group2'][x].id; }
+      if(ids[0][x]=='' || ids[1][x]==''){ all_has_user = false; break; }
+    }
+    if(all_has_user){ 
+      return ids;
+    }else{
+      return null;
     }
   }
 
