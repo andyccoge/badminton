@@ -646,8 +646,8 @@
   // 上方選單-------------------------------------------------------------------------
   const refNav = ref(null);
   const auto_set_users = (court_index) => {
-    const result = refNav.value.refModalAutoSetUserSettingdal.get_recommend_users(users, courts, contest_record);
-    // console.log(result)
+    const result = refNav.value.refModalAutoSetUserSettingdal.get_recommend_users(court_index, users, courts, contest_record);
+    // console.log(result);
     if(result){
       courts[court_index].users = JSON.parse(JSON.stringify(result));
     }

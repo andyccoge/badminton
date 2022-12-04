@@ -45,7 +45,7 @@
   }
 
   /* 取得建議比賽組合 */
-  const get_recommend_users = (users, courts=[], records=[]) => {
+  const get_recommend_users = (court_index, users, courts=[], records=[]) => {
     users = JSON.parse(JSON.stringify(users));
     users.forEach((v,k) => {
       users[k].pre_paired = check_on_court(v.id, 0);
@@ -58,16 +58,18 @@
     const all_rest_cond = [true, false]; /* 先要求全部閒置、再不依狀態取人 */
     for (let z = 0; z < all_rest_cond.length; z++) {
       const all_rest = all_rest_cond[z];
-      let ids = get_next_user_with_status(users, courts, records, all_rest);
+      let ids = get_next_user_with_status(court_index, users, courts, records, all_rest);
       if(ids!==null){ return ids; }
     }
     toast.warning('無可自動安排的組合');
   }
-  const get_next_user_with_status = (users, courts, records, all_rest) => {
+  const get_next_user_with_status = (court_index, users, courts, records, all_rest) => {
     const allow_repeat_limit = all_rest ? 5 : 6; /* 如果要求全部閒置，那允許重複數不可超過4(不允許隨機組) */
     for (let allow_repeat_num = 0; allow_repeat_num < allow_repeat_limit; allow_repeat_num++) {
-      const group = {'group1':[], 'group2':[]};
-      const group_level_sum = {'group1':0, 'group2':0};
+      const group_result = init_group_data(users, courts[court_index]);
+      const group = group_result['group'];
+      const group_level_sum = group_result['group_level_sum'];
+
       if(allow_repeat_num==5){ users = functions.random_sort_array(users); }
       // console.log(allow_repeat_num);
       let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num, all_rest);
@@ -77,6 +79,32 @@
       }
     }
     return null;
+  }
+  const init_group_data = (users, court) => {
+    court = JSON.parse(JSON.stringify(court));
+    const group_result = {};
+    const group = {'group1':[], 'group2':[]};
+    const group_level_sum = {'group1':0, 'group2':0};
+    if(court.users[0].filter(user_id => user_id!='').length + 
+       court.users[1].filter(user_id => user_id!='').length < 4){
+      court.users.forEach((team, team_key)=> {
+        team.forEach(user_id => {
+          if(user_id!=''){
+            for (let i = 0; i < users.length; i++) {
+              if(users[i].id==user_id){
+                group['group'+(team_key+1)].push(users[i]); 
+                group_level_sum['group'+(team_key+1)] += users[i].level;
+                break;
+              }
+            }
+          }
+        });
+      });
+    }
+    group_result['group'] = group;
+    group_result['group_level_sum'] = group_level_sum;
+    // console.log(group_result);
+    return group_result;
   }
   const get_next_user = (users, group, group_level_sum, courts=[], records=[], allow_repeat_num=0, all_rest=true) => {
     users = JSON.parse(JSON.stringify(users));
