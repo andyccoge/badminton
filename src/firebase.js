@@ -68,7 +68,7 @@ const data_with_base_column = (table, data, add_column=false) => {
     empty_data = {id:null, name:'', nick:null, gender:'', level:0, phone:null, email:null};
   }
   else if(table=='game_date_users'){
-    empty_data = {id:null, game_date_id:null, user_id:null, played:0, wait:0, status:0, paid:0};
+    empty_data = {id:null, game_date_id:null, user_id:null, played:0, wait:0, status:0, paid:0, check_in:0};
   }
   else if(table=='game_date'){
     empty_data = {id:null, date:null, location:null};

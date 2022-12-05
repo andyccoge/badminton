@@ -3,7 +3,8 @@
   import { ref, inject } from 'vue';
   import { db_sign_out } from '../firebase.js';
   import Modal from '../components/Modal.vue';
-  import ModalAutoSetUserSettingdal from '../components/ModalAutoSetUserSetting.vue';
+  import ModalAutoSetUserSetting from '../components/ModalAutoSetUserSetting.vue';
+  import ModalUsersCheckIn from '../components/ModalUsersCheckIn.vue';
   import * as Icon from '@heroicons/vue/24/outline';
   import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
   const show_notify = false;
@@ -26,17 +27,28 @@
     // { name: 'Sign out', href: '#' },
   ];
 
+  const props = defineProps({
+    users: Array,
+  });
+
   let modal_open_contest_record = inject('modal_open_contest_record');
   const toggle_use_sound = inject('toggle_use_sound') ? inject('toggle_use_sound') : ()=>{};
   const get_use_sound = inject('get_use_sound') ? inject('get_use_sound') : ()=>{return 'false'};
   const modal_open_question = ref(false); 
 
-  const refModalAutoSetUserSettingdal = ref(null);
-  const open_ModalAutoSetUserSettingdal = () => {
-    refModalAutoSetUserSettingdal.value.toggle_modal(true);
+  const refModalAutoSetUserSetting = ref(null);
+  const open_ModalAutoSetUserSetting = () => {
+    refModalAutoSetUserSetting.value.toggle_modal(true);
   }
+
+  const refModalUsersCheckIn = ref(null);
+  const open_ModalUsersCheckIn = () => {
+    refModalUsersCheckIn.value.toggle_modal(true);
+  }
+
   defineExpose({
-    refModalAutoSetUserSettingdal,
+    refModalAutoSetUserSetting,
+    refModalUsersCheckIn,
   })
 </script>
 
@@ -61,7 +73,10 @@
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="modal_open_question=true">
               <Icon.QuestionMarkCircleIcon class="w-5 h-5"></Icon.QuestionMarkCircleIcon>
             </button>
-            <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="open_ModalAutoSetUserSettingdal">
+            <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="open_ModalUsersCheckIn">
+              <Icon.UserGroupIcon class="w-5 h-5"></Icon.UserGroupIcon>
+            </button>
+            <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="open_ModalAutoSetUserSetting">
               <Icon.LightBulbIcon class="w-5 h-5"></Icon.LightBulbIcon>
             </button>
             <button class="rounded-2xl p-0.5 aspect-square border-2 mr-2 bg-yellow-300 border-yellow-600" @click="toggle_use_sound">
@@ -224,7 +239,8 @@
     </template>
   </modal>
 
-  <ModalAutoSetUserSettingdal ref="refModalAutoSetUserSettingdal"></ModalAutoSetUserSettingdal>
+  <ModalAutoSetUserSetting ref="refModalAutoSetUserSetting"></ModalAutoSetUserSetting>
+  <ModalUsersCheckIn ref="refModalUsersCheckIn" :users="props.users"></ModalUsersCheckIn>
 </template>
 
 <style scoped>

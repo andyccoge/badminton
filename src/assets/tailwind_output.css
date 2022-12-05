@@ -955,6 +955,10 @@ body{
   margin-top: 0px;
 }
 
+.mr-0 {
+  margin-right: 0px;
+}
+
 .mt-4 {
   margin-top: 1rem;
 }
@@ -1001,10 +1005,6 @@ body{
 
 .mb-20 {
   margin-bottom: 5rem;
-}
-
-.mr-0 {
-  margin-right: 0px;
 }
 
 .block {
@@ -1270,6 +1270,10 @@ body{
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
+.grid-rows-2 {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
 .flex-row {
   flex-direction: row;
 }
@@ -1312,6 +1316,14 @@ body{
 
 .gap-0 {
   gap: 0px;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
 }
 
 .space-x-4 > :not([hidden]) ~ :not([hidden]) {
@@ -1703,10 +1715,6 @@ body{
   padding-top: 0.75rem;
 }
 
-.pr-2 {
-  padding-right: 0.5rem;
-}
-
 .text-center {
   text-align: center;
 }
@@ -1886,18 +1894,18 @@ body{
   transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
 
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-
 .line-clamp-2 {
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .after\:absolute::after {

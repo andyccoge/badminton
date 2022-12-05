@@ -45,10 +45,12 @@
       const user = users[x];
       const prepare = check_on_court(user.id, 0);
       const playing = check_on_court(user.id, 1);
-      if(!prepare && !playing){ first.push(user); }
-      else if(prepare && !playing){ second.push(user); }
-      else if(!prepare && playing){ third.push(user); }
-      else if(prepare && playing){ fourth.push(user); }
+      if(user.check_in==1){
+        if(!prepare && !playing){ first.push(user); }
+        else if(prepare && !playing){ second.push(user); }
+        else if(!prepare && playing){ third.push(user); }
+        else if(prepare && playing){ fourth.push(user); }
+      }
     }
     user_data = user_data.concat(first.sort((a,b) => (a.played > b.played) ? 1 : ((b.played > a.played) ? -1 : 0)))
     user_data = user_data.concat(second.sort((a,b) => (a.played > b.played) ? 1 : ((b.played > a.played) ? -1 : 0)))
@@ -59,7 +61,7 @@
   const users_show_by_self = ref([]);
   watch(users, () => {
     let new_ids = [];
-    users.forEach(element => { new_ids.push(element.id); });
+    users.forEach(element => { if(element.check_in==1){new_ids.push(element.id);} });
 
     let element_changed = false;
     if(new_ids.length != users_show_by_self.value.length){
@@ -86,9 +88,11 @@
       team.forEach(user_id => {
         for (let x = 0; x < users.length; x++) {
           if(users[x].id == user_id){ 
-            user_data.push(users[x]);
-            has_add_ids.push(users[x].id);
-            break;
+            if(users[x].check_in==1){
+              user_data.push(users[x]);
+              has_add_ids.push(users[x].id);
+              break;
+            }
           }
         }
       });
@@ -96,7 +100,9 @@
 
     for (let x = 0; x < users.length; x++) {
       if(has_add_ids.indexOf(users[x].id)==-1){
-        user_data.push(users[x]);
+        if(users[x].check_in==1){
+          user_data.push(users[x]);
+        }
       }
     }
     return user_data;

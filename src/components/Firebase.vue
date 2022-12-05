@@ -150,10 +150,11 @@
     date_users.forEach((value, key) => { 
       date_users[key].id = null;
       date_users[key].game_date_id = new_id;
-      date_users[key].paid = 0;
       date_users[key].played = 0;
-      date_users[key].status = 0;
       date_users[key].wait = 0;
+      date_users[key].status = 0;
+      date_users[key].paid = 0;
+      date_users[key].check_in = 0;
     });
     await db_set_data('game_date_users', date_users);
     

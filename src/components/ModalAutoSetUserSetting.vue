@@ -121,20 +121,33 @@
       // console.log(get_data(group['group1'],'name'), get_data(group['group2'],'name'), user.name);
       let target_user_level = user.level;
       let add_user = true;
+
+      /* 檢查是否加入過 */
+      for (let y = 0; y < group['group1'].length; y++) {
+        if(group['group1'][y].id == user.id){
+          add_user = false;
+          break;
+        }
+      }
+      for (let y = 0; y < group['group2'].length; y++) {
+        if(group['group2'][y].id == user.id){
+          add_user = false;
+          break;
+        }
+      }
+
       if(allow_repeat_num<=4){ /* 允許值小於等於4時 */
-        /* 檢查兩兩等級差異 跟 是否加入過 */
+        /* 檢查兩兩等級差異 */
         for (let y = 0; y < group['group1'].length; y++) {
-          if(Math.abs(target_user_level - group['group1'][y].level) > modal.data.diff_level_divi 
-             || group['group1'][y].id == user.id
-          ){
+          if(Math.abs(target_user_level - group['group1'][y].level) > modal.data.diff_level_divi){
             add_user = false;
+            break;
           }
         }
         for (let y = 0; y < group['group2'].length; y++) {
-          if(Math.abs(target_user_level - group['group2'][y].level) > modal.data.diff_level_divi
-             || group['group2'][y].id == user.id
-          ){
+          if(Math.abs(target_user_level - group['group2'][y].level) > modal.data.diff_level_divi){
             add_user = false;
+            break;
           }
         }
         /* 目前還需添加此人 */

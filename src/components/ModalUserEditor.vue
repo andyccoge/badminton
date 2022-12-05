@@ -3,13 +3,13 @@
   import { useToast } from "vue-toastification";
   import Firebase from '../components/Firebase.vue';
   import Modal from '../components/Modal.vue';
-  import Leftmenu from '../components/Leftmenu.vue';
   import * as functions from '../functions.js';
   const toast = useToast();
   const swal = inject('$swal');
 
   const props = defineProps({
     users: Array,
+    refLeftmenu: Object,
   });
 
   const refFirebase = ref(null);
@@ -77,7 +77,7 @@
             document.querySelectorAll('button.user .eye').forEach(element => {
               element.addEventListener('click', (e) => {
                 const user_id = element.getAttribute('user_id');
-                toggle_menu_open_left_id(user_id);
+                props.refLeftmenu.toggle_menu_open_left_id(user_id);
                 setTimeout(()=>{
                   let class_text = document.querySelector('.left_menu').getAttribute('class') + ' very_front ';
                   document.querySelectorAll('.left_menu').forEach(element => {
@@ -100,7 +100,7 @@
                   }else{
                     target_user = null;
                     const user_id = element.getAttribute('user_id');
-                    toggle_menu_open_left_id(user_id);
+                    props.refLeftmenu.toggle_menu_open_left_id(user_id);
                     setTimeout(()=>{
                       let class_text = document.querySelector('.left_menu').getAttribute('class') + ' very_front ';
                       document.querySelectorAll('.left_menu').forEach(element => {
@@ -118,11 +118,6 @@
           if(result.isConfirmed){
             target_user = null;
           }
-        });
-        let class_text = document.querySelector('.left_menu').getAttribute('class');
-        class_text = class_text.replaceAll('very_front', '');
-        document.querySelectorAll('.left_menu').forEach(element => {
-          element.setAttribute('class', class_text);
         });
       }
       if(game_date_id && target_user){
@@ -151,17 +146,6 @@
       emit('change_user_data', userModal.index, target_user);
     }
   }
-
-  // 左側人員詳細料面板-------------------------------------------------------------------------
-  const refLeftmenu = ref(null);
-  const toggle_menu_open_left = async(user_index=-1)=>{
-    await refLeftmenu.value.toggle_menu_open_left(user_index);
-  }
-  const toggle_menu_open_left_id = async(user_id=-1)=>{
-    await refLeftmenu.value.toggle_menu_open_left_id(user_id);
-  }
-  provide('toggle_menu_open_left', toggle_menu_open_left);
-  provide('toggle_menu_open_left_id', toggle_menu_open_left_id);
 
   defineExpose({
     userModal,
@@ -226,9 +210,6 @@
       </button>
     </template>
   </modal>
-
-  <Leftmenu :users="props.users" :need_user_delete="false" ref="refLeftmenu">
-  </Leftmenu>
 </template>
 
 <style scoped>

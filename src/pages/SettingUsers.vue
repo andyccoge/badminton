@@ -118,11 +118,6 @@
               });
             }
           });
-          let class_text = document.querySelector('.left_menu').getAttribute('class');
-          class_text = class_text.replaceAll('very_front', '');
-          document.querySelectorAll('.left_menu').forEach(element => {
-            element.setAttribute('class', class_text);
-          });
           if(target_user){ user_id = target_user.id; }
         }
         if(user_id){
@@ -186,7 +181,9 @@
 <template>
   <Firebase ref="refFirebase"></Firebase>
   <ModalFirebase @sign_in_success="sign_in_success"></ModalFirebase>
-  <ModalUserEditor @change_user_data="change_user_data" :users="users" ref="refModalUserEditor"></ModalUserEditor>
+  <ModalUserEditor @change_user_data="change_user_data" :users="users" 
+                  ref="refModalUserEditor" :refLeftmenu="refLeftmenu">
+  </ModalUserEditor>
   <NavSetting></NavSetting>
 
   <div class="p-2">

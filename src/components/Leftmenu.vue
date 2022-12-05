@@ -27,6 +27,11 @@
     if(user_index==-1){
       if(menu_open_left.value){
           menu_open_left.value = false;
+          let class_text = document.querySelector('.left_menu').getAttribute('class');
+          class_text = class_text.replaceAll('very_front', '');
+          document.querySelectorAll('.left_menu').forEach(element => {
+            element.setAttribute('class', class_text);
+          });
       }else{
           menu_open_left.value = true;
       }

@@ -148,6 +148,15 @@
     data = {...data, ...user_play_data_empty};
     users.push(data);
   }
+  const set_user_check_in = (indexs, num) => {
+    refFirebase.value.set_body_block_show_top(true);
+    indexs.forEach(async(index) => {
+      users[index].check_in = num;
+      await refFirebase.value.db_update_data('game_date_users', users[index].date_user_id, {'check_in': num});
+    });
+    refFirebase.value.set_body_block_show_top(false);
+  }
+  provide('set_user_check_in', set_user_check_in);
 
   // 主頁場地-------------------------------------------------------------------------
   let court_empty_user = () => { return [['',''],['','']]; }
@@ -646,7 +655,7 @@
   // 上方選單-------------------------------------------------------------------------
   const refNav = ref(null);
   const auto_set_users = (court_index) => {
-    const result = refNav.value.refModalAutoSetUserSettingdal.get_recommend_users(court_index, users, courts, contest_record);
+    const result = refNav.value.refModalAutoSetUserSetting.get_recommend_users(court_index, users, courts, contest_record);
     // console.log(result);
     if(result){
       courts[court_index].users = JSON.parse(JSON.stringify(result));
@@ -714,8 +723,7 @@
   <CourtEditor @change_court_data="change_court_data" ref="refCourtEditor"></CourtEditor>
   <ModalPoints @court_start="court_start" @update_court_points="update_court_points"  ref="refModalPoints"></ModalPoints>
   <ContestRecord ref="refContestRecord" @sync_contest_record="sync_contest_record" @set_users_played_num="set_users_played_num"></ContestRecord>
-
-  <Nav ref="refNav"></Nav>
+  <Nav ref="refNav" :users="users"></Nav>
   <Leftmenu :users="users" ref="refLeftmenu" 
             @change_user_data="change_user_data" :need_user_date_info="true"
             @userModal_open="userModal_open" :need_user_edit="true"
