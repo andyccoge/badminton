@@ -53,6 +53,7 @@
       users[k].level = get_calculate_level(v); /* 計算目標等級 */
     });
     var users = users.sort(function(a, b) { return a.pre_paired - b.pre_paired || a.playing - b.playing}); /* 依準備場次由少到多排序 及 比賽場次由多到少 */
+    users= users.filter(user => user.check_in==1 );
     // console.log(get_data(users, 'nick'), get_data(users, 'pre_paired'), get_data(users, 'playing'));
   
     const all_rest_cond = [true, false]; /* 先要求全部閒置、再不依狀態取人 */
