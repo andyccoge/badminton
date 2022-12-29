@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, reactive, inject } from 'vue';
+  import { ref, reactive, inject, onMounted } from 'vue';
   import { useToast } from "vue-toastification";
   import Firebase from '../components/Firebase.vue';
   import Modal from '../components/Modal.vue';
@@ -8,6 +8,9 @@
   const swal = inject('$swal');
 
   const refFirebase = ref(null);
+  onMounted(() => {
+    refFirebase.value.renew_timestamp();
+  })
 
   const game_date_id = inject('game_date_id');
 
@@ -57,7 +60,8 @@
       target.game_date_id = game_date_id.value;
       target = await refFirebase.value.db_add_data('game_date_courts', target);
     }else{
-      await refFirebase.value.db_update_data('game_date_courts', courts[courtModal.index].id, target);
+      const result = await refFirebase.value.db_update_data('game_date_courts', courts[courtModal.index].id, target);
+      if(result===false){ target=null; }
     }
     courtModal.show = false;
 

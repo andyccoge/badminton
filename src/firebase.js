@@ -52,12 +52,13 @@ export async function get_db_data(table, cond=[{'orderBy':["create_time", "desc"
     dataList = docs_obj.docs.map(doc => doc.data());
   } catch (error) {
   }
-
-  dataList.forEach((element, index) => {
-    if(typeof(element['users'])!='undefined'){
-      dataList[index]['users'] = JSON.parse(element['users']);
-    }
-  });
+  if(dataList!==null){
+    dataList.forEach((element, index) => {
+      if(typeof(element['users'])!='undefined'){
+        dataList[index]['users'] = JSON.parse(element['users']);
+      }
+    });
+  }
   return dataList;
 }
 
@@ -83,6 +84,9 @@ const data_with_base_column = (table, data, add_column=false) => {
   }
   else if(table=='auto_set_user_setting'){
     empty_data = {id:null, diff_level_sum:0, diff_level_divi:0, woman_level_deduct:0, no_deduct_level:0};
+  }
+  else if(table=='game_date_courts_timestamp'){
+    empty_data = {id:null, timestamp:0};
   }
 
   let keys = Object.keys(empty_data);

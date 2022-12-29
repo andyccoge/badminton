@@ -7,6 +7,34 @@
   const toast = useToast();
   const swal = inject('$swal');
 
+  const game_date_courts_timestamp = ref(null);
+  const renew_timestamp = async() => {
+    const timestamp = await firebase.get_db_data('game_date_courts_timestamp');
+    if(timestamp.length==0){
+      game_date_courts_timestamp.value = Date.now();
+      await firebase.set_data('game_date_courts_timestamp', [{'timestamp':game_date_courts_timestamp.value}]);
+    }else{
+      game_date_courts_timestamp.value = timestamp[0].timestamp;
+    }
+  }
+  const check_timestamp = async() => {
+    const timestamp = await firebase.get_db_data('game_date_courts_timestamp');
+    if(timestamp.length==0){
+      game_date_courts_timestamp.value = Date.now();
+      await firebase.set_data('game_date_courts_timestamp', [{'timestamp':game_date_courts_timestamp.value}]);
+    }else{
+      if(game_date_courts_timestamp.value < timestamp[0].timestamp){
+        toast.error("已有他人更新資料，請讀取後再進行修改");
+        body_block_show.value = false;
+        return false;
+      }else{
+        game_date_courts_timestamp.value = Date.now();
+        await firebase.update_data('game_date_courts_timestamp', timestamp[0].id, {'timestamp':game_date_courts_timestamp.value});
+      }
+    }
+    return true;
+  }
+
   let body_block_show = ref(false);
   let body_block_show_long = ref(false);
   const set_body_block_show_long = (status) => {
@@ -81,6 +109,11 @@
   }
   const db_get_data = async(table, cond=[{'orderBy':["create_time", "desc"]}]) => {
     body_block_show.value = true;
+
+    if(table=='game_date_courts'){
+      await renew_timestamp();
+    }
+    
     let data = [];
     try {
       data = await firebase.get_db_data(table, cond);
@@ -95,6 +128,12 @@
   const db_update_data = async(table, id, data) => {
     let result = true;
     body_block_show.value = true;
+    
+    if(table=='game_date_courts'){
+      result = await check_timestamp();
+      if(result===false){ return result; }
+    }
+
     try {
       await firebase.update_data(table, id, data);
     } catch (error) {
@@ -108,6 +147,12 @@
   const db_delete_data = async(table, id) => {
     let result = true;
     body_block_show.value = true;
+
+    if(table=='game_date_courts'){
+      result = await check_timestamp();
+      if(result===false){ return result; }
+    }
+
     try {
       await firebase.delete_data(table, id);
     } catch (error) {
@@ -170,6 +215,8 @@
   defineExpose({
     set_body_block_show_long, /* 控制跨操作顯示黑屏 */
     set_body_block_show_top, /* 控制跨操作顯示黑屏(絕對頂) */
+
+    renew_timestamp,
     
     db_add_data, /* 添加一筆資料(可檢查重複) */
     db_set_data, /* 批次添加資料(不檢查重複) */

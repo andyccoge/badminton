@@ -79,13 +79,7 @@
     sync_contest_record();
 
     /* 取得場地資料 */
-    courts.splice(0, courts.length);
-    let courts_data = await refFirebase.value.db_get_data('game_date_courts', [['game_date_id', '==', game_date_id.value], {'orderBy':['create_time', 'asc']}]);
-    for (let x = 0; x < courts_data.length; x++) {
-      courts.push(courts_data[x]);
-    }
-    // console.log(courts);
-    refBottommenu.value.init_alert_wait();
+    await get_game_date_courts();
 
     /*取得人員資料*/
     await get_play_users();
@@ -96,6 +90,30 @@
       e.returnValue=("確定離開當前頁面嗎？");
     }
 
+    refFirebase.value.set_body_block_show_long(false);
+  }
+  const get_game_date_courts = async() => {
+    for (let x = 0; x < courts.length; x++) {
+      if(courts[x].timer){clearInterval(courts[x].timer);}
+    }
+    courts.splice(0, courts.length);
+    let courts_data = await refFirebase.value.db_get_data('game_date_courts', [['game_date_id', '==', game_date_id.value], {'orderBy':['create_time', 'asc']}]);
+    for (let x = 0; x < courts_data.length; x++) {
+      courts.push(courts_data[x]);
+    }
+    // console.log(courts);
+    refBottommenu.value.init_alert_wait();
+  }
+  const save_game_date_courts = async() => {
+    refFirebase.value.set_body_block_show_long(true);
+    for (let index = 0; index < courts.length; index++) {
+      const element = courts[index];
+      const result = await refFirebase.value.db_update_data('game_date_courts', element.id, element);
+      if(result===false){
+        refFirebase.value.set_body_block_show_long(false);
+        return;
+      }
+    }
     refFirebase.value.set_body_block_show_long(false);
   }
   const get_play_users = async() => {
@@ -733,8 +751,14 @@
   <main>
     <div class="bg-yellow-200 pb-6 relative">
       <h2 class="text-center font-bold text-xl flex justify-center flex-wrap">
+        <button class="mr-3" @click="save_game_date_courts">
+          <Icon.CloudArrowUpIcon class="h-5 w-5 text-black"></Icon.CloudArrowUpIcon>
+        </button>
         <span v-text="functions.stamp_to_time(game_date_data.date)"></span>
-        <span v-text="game_date_data.location"></span>  
+        <span v-text="game_date_data.location"></span>
+        <button class="ml-3" @click="get_game_date_courts">
+          <Icon.CloudArrowDownIcon class="h-5 w-5 text-black"></Icon.CloudArrowDownIcon>
+        </button>
       </h2>
       <div class="grid gap-0 xl:grid-cols-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-2 sm:px-4 px-0">
         <template v-for="(court, court_index) in courts">
