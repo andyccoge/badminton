@@ -103,6 +103,9 @@
     }
     // console.log(courts);
     refBottommenu.value.init_alert_wait();
+
+    /* 初始化多裝置偕同時間戳 */
+    refCourtEditor.value.refFirebase.renew_timestamp();
   }
   const save_game_date_courts = async() => {
     refFirebase.value.set_body_block_show_long(true);

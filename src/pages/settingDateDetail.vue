@@ -28,6 +28,9 @@
       courts.push(courts_data[x]);
     }
 
+    /* 初始化多裝置偕同時間戳 */
+    refCourtEditor.value.refFirebase.renew_timestamp();
+
     /*取得比賽資料*/
     refContestRecord.value.init_data();
   }

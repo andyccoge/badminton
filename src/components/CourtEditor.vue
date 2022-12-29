@@ -8,9 +8,6 @@
   const swal = inject('$swal');
 
   const refFirebase = ref(null);
-  onMounted(() => {
-    refFirebase.value.renew_timestamp();
-  })
 
   const game_date_id = inject('game_date_id');
 
@@ -80,6 +77,7 @@
   defineExpose({
     set_court_data,
     courtModal_add,
+    refFirebase,
   })
 </script>
 
