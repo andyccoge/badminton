@@ -391,6 +391,7 @@
       start_new_game(finish_index);
     }else{
       court_reset(finish_index, true);
+      refFirebase.value.db_update_data('game_date_courts', courts[finish_index].id, {'users':courts[finish_index].users});
     }
     if(check_court_empty(finish_index)){     
         toast.warning("目前已無預備人員，或預備人員正在場上");
@@ -447,6 +448,7 @@
 
         courts.splice(x, 1);
         courts.push(next);
+        refFirebase.value.db_update_data('game_date_courts', next.id, {'users':next.users});
         break;
       }
     }
