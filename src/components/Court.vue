@@ -23,6 +23,9 @@
   const court_next = inject('court_next'); 
   const check_court_empty = inject('check_court_empty') ? inject('check_court_empty') : ()=>{return true;}; 
 
+  const auto_set_users = async() => {
+    emit('auto_set_users', props.court_index);
+  }
   const court_users_to_speech = async() => {
     emit('court_users_to_speech', props.court_index);
   }
@@ -88,7 +91,7 @@
         <button class="px-2" @click="court_eidt(props.court_index)" v-if="court.type==1">
           <Icon.PencilSquareIcon class="w-5 h-5 text-white"></Icon.PencilSquareIcon>
         </button>
-        <button class="px-2" @click="emit('auto_set_users', props.court_index)" v-if="court.type==0">
+        <button class="px-2" @click="auto_set_users()" v-if="court.type==0">
           <Icon.LightBulbIcon class="w-5 h-5 text-white"></Icon.LightBulbIcon>
         </button>
         <button class="px-2" @click="court_delete(props.court_index)" v-if="court.type==0 || get_use_sound()!='true'">
@@ -168,6 +171,9 @@
         </span>
         <span v-text="game_time"></span>
         <template v-if="props.court.type==1">
+          <button class="sm:pl-2 sm:pr-0 sm:absolute pl-0 left-0" @click="auto_set_users()" v-if="!court.timer">
+            <Icon.LightBulbIcon class="w-5 h-5 text-white"></Icon.LightBulbIcon>
+          </button>
           <button class="sm:pl-0 sm:pr-2 sm:absolute pl-4 right-0" @click="court_start(props.court_index)" v-if="!court.timer">
             <Icon.PlayIcon class="w-5 h-5 text-white"></Icon.PlayIcon>
           </button>

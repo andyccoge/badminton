@@ -315,6 +315,14 @@
     user_set_status(user_id, 0, 'user_id');
   }
   provide('court_delete_user', court_delete_user);
+  /* 依給定場地資料設定人員上下場狀態 */
+  const court_user_set_status = (court_data, status) =>{
+    court_data.users.forEach((group)=>{
+      group.forEach((user_id) => {
+        user_set_status(user_id, status, 'user_id');
+      });
+    });
+  }
   /* 設定人員狀態(1.比賽 0.閒置，只在場上人員更新後使用，會檢查當前場地人員安排是否符合要求設定的人員狀態) */
   const user_set_status = (key=-1, status, search_type='user_id') => {
     if(key < 0 || key===''){ return; }
@@ -412,11 +420,7 @@
     /* 設定場上人員下場 */
     let ori = copy_court(courts[court_index]);
     courts[court_index].users = court_empty_user();
-    ori.users.forEach((group, group_index)=>{
-      group.forEach((user_id, user_index) => {
-        user_set_status(user_id, 0, 'user_id');
-      });
-    });
+    court_user_set_status(ori, 0);
 
     let has_next_game = false;
     for (let x = 0; x < courts.length; x++) {
@@ -438,12 +442,8 @@
 
         /* 設定下組員上場 */
         let next = copy_court(courts[x]);
-        next.users.forEach((group, group_index)=>{
-          group.forEach((user_id, user_index) => {
-            courts[court_index].users[group_index][user_index] = user_id;
-            user_set_status(user_id, 1, 'user_id');
-          });
-        });
+        courts[court_index].users = JSON.parse(JSON.stringify(next.users));
+        court_user_set_status(next, 1);
         next.users = court_empty_user();
 
         courts.splice(x, 1);
@@ -678,10 +678,16 @@
   // 上方選單-------------------------------------------------------------------------
   const refNav = ref(null);
   const auto_set_users = (court_index) => {
+    if(courts[court_index].timer){ toast.warning('比賽進行中，無法自動排人'); return; }
     const result = refNav.value.refModalAutoSetUserSetting.get_recommend_users(court_index, users, courts, contest_record);
     // console.log(result);
     if(result){
+      let ori = copy_court(courts[court_index]);
       courts[court_index].users = JSON.parse(JSON.stringify(result));
+      if(courts[court_index].type==1){
+        court_user_set_status(ori, 0);
+        court_user_set_status(courts[court_index], 1);
+      }
     }
   }
 
@@ -770,6 +776,7 @@
           <Court v-if="court.type==1"
                 :court="court"
                 :court_index="court_index"
+                @auto_set_users="auto_set_users"
                 @court_users_to_speech="court_users_to_speech"
           ></Court>
         </template>

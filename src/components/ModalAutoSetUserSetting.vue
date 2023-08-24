@@ -73,7 +73,7 @@
 
       if(allow_repeat_num==5){ users = functions.random_sort_array(users); }
       // console.log(allow_repeat_num);
-      let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num, all_rest);
+      let result = get_next_user(users, group, group_level_sum, courts, records, allow_repeat_num, court_index, all_rest);
       if(result){ 
         let ids = result_get_ids(result);
         if(ids!==null){ return ids; }
@@ -107,7 +107,7 @@
     // console.log(group_result);
     return group_result;
   }
-  const get_next_user = (users, group, group_level_sum, courts=[], records=[], allow_repeat_num=0, all_rest=true) => {
+  const get_next_user = (users, group, group_level_sum, courts=[], records=[], allow_repeat_num=0, court_index, all_rest=true) => {
     users = JSON.parse(JSON.stringify(users));
     group = JSON.parse(JSON.stringify(group));
     group_level_sum = JSON.parse(JSON.stringify(group_level_sum));
@@ -115,10 +115,14 @@
     records = JSON.parse(JSON.stringify(records));
   
     for (let x = 0; x < users.length; x++) {
-      let target_key = group.group1.length == group.group2.length ? 'group1' : 'group2';
-      let target_index = group.group1.length == group.group2.length ? 0 : 1;
+      let target_key = group.group1.length <= group.group2.length ? 'group1' : 'group2';
+      let target_index = group.group1.length <= group.group2.length ? 0 : 1;
       const user = users[x];
-      if(all_rest && user.playing!=0){ continue; } /* 若要求全部人都是閒置狀態 且 該人員有在比賽，則跳過 */
+      if(courts[court_index].type==1){ /*智慧安排的是比賽場*/
+        if(user.playing!=0){ continue; } /* 若該人員有在比賽，則跳過 */
+      }else{ /*預備場*/
+        if(all_rest && (user.playing!=0 || user.pre_paired!=0)){ continue; } /* 若要求全部人都是閒置狀態 且 該人員有在比賽或準備，則跳過 */
+      }
       // console.log(get_data(group['group1'],'name'), get_data(group['group2'],'name'), user.name);
       let target_user_level = user.level;
       let add_user = true;
@@ -186,7 +190,7 @@
         let rest_users = JSON.parse(JSON.stringify(users));
         rest_users.splice(x, 1);
         if(rest_users.length>0){
-          let result = get_next_user(rest_users, next_group, next_group_level_sum, courts, records, allow_repeat_num, all_rest);
+          let result = get_next_user(rest_users, next_group, next_group_level_sum, courts, records, allow_repeat_num, court_index, all_rest);
           if(result){ 
             if(result['group1'].length + result['group2'].length==4){ return result; }
           }
