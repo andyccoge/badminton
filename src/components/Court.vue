@@ -164,16 +164,18 @@
       </div>
     </div>
     <div class="w-full flex align-center justify-center relative" v-if="props.court.type==1">
-      <div class="flex relative items-center justify-around py-1 sm:px-4 px-4 pr-1 bg-slate-800 text-white min-w-[50%] rounded-b">
+      <div class="flex relative items-center justify-around py-1 sm:px-4 px-1 bg-slate-800 text-white min-w-[50%] rounded-b">
         <span class="alert_dot flex h-3 w-3 absolute" v-if="props.court.time==0 && !props.court.timer">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-700 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
         </span>
-        <span v-text="game_time"></span>
         <template v-if="props.court.type==1">
-          <button class="sm:pl-2 sm:pr-0 sm:absolute pl-0 left-0" @click="auto_set_users()" v-if="!court.timer">
+          <button class="sm:pr-0 sm:pl-2 sm:absolute pr-4 left-0" @click="auto_set_users()" v-if="!court.timer">
             <Icon.LightBulbIcon class="w-5 h-5 text-white"></Icon.LightBulbIcon>
           </button>
+        </template>
+        <span v-text="game_time"></span>
+        <template v-if="props.court.type==1">
           <button class="sm:pl-0 sm:pr-2 sm:absolute pl-4 right-0" @click="court_start(props.court_index)" v-if="!court.timer">
             <Icon.PlayIcon class="w-5 h-5 text-white"></Icon.PlayIcon>
           </button>
